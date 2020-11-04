@@ -1,0 +1,46 @@
+/**
+ * User: CHT
+ * Date: 2020/11/4
+ * Time: 9:37
+ */
+
+html,
+body {
+  margin  : 0;
+  padding : 0;
+}
+
+.node-item__container {
+  list-style : none;
+  padding    : 0;
+  margin     : 0;
+
+  .node-item {
+    @height       : 32px;
+
+    float         : left;
+    width         : 120px;
+    height        : @height;
+    margin        : 12px;
+    line-height   : @height;
+    padding       : 0 12px;
+    border-radius : 4px;
+    box-shadow    : 0 0 6px rgba(0, 0, 0, .3);
+    font-size     : 14px;
+    cursor        : pointer;
+
+    &.move-item {
+      position         : fixed;
+      background-color : #FFFFFF;
+      margin           : 0;
+    }
+  }
+}
+
+
+.super-flow__container {
+  width            : 800px;
+  height           : 600px;
+  background-color : #F5F5F5;
+  overflow         : hidden;
+}

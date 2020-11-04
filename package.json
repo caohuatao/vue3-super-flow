@@ -1,25 +1,42 @@
 {
   "name": "vue3-super-flow",
-  "version": "0.1.0",
-  "private": true,
+  "version": "2.0.0",
+  "keywords": [
+    "flowChart",
+    "super flow",
+    "vue flow chart",
+    "vue 流程图"
+  ],
+  "license": "MIT",
+  "description": "Vue-super-flow is a quick and convenient Vue plug-in to realize flow chart. Demo address: https://caohuatao.github.io/demo/;",
+  "main": "lib/index.umd.min.js",
+  "author": "caohuatao <351995664@qq.com>",
+  "homepage": "https://github.com/caohuatao/vue3-super-flow",
+  "files": [
+    "/lib/index.umd.min.js",
+    "/lib/index.css",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build"
+    "build": "vue-cli-service build",
+    "lib": "vue-cli-service build --target lib --name index --dest lib packages/index.tsx",
+    "update": "npm run lib && npm publish",
+    "update-test": "npm run lib && npm publish --tag=beta"
   },
   "dependencies": {
     "core-js": "^3.6.5",
-    "vue": "^2.6.11",
-    "vue-class-component": "^7.2.3",
-    "vue-property-decorator": "^8.4.2"
+    "vue": "^3.0.0-beta.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-typescript": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
+    "@vue/compiler-sfc": "^3.0.0-beta.1",
     "less": "^3.0.4",
     "less-loader": "^5.0.0",
-    "typescript": "~3.9.3",
-    "vue-template-compiler": "^2.6.11"
+    "typescript": "~3.9.3"
   },
   "browserslist": [
     "> 1%",
