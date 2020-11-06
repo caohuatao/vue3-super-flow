@@ -37,11 +37,11 @@ interface LineStyle {
   background?: Color
 }
 
-interface MenuItem<T> {
+interface MenuItem {
   label: string
-  meta?: { [key: string]: any }
-  disable?: boolean | ((o: T) => boolean)
-  hidden?: boolean | ((o: T) => boolean)
+
+  disable?: boolean | ((o: NodeItem | LineItem) => boolean)
+  hidden?: boolean | ((o: NodeItem | LineItem) => boolean)
   
-  selected(o: T, coordinate: Coordinate): void
+  selected(o, coordinate: Coordinate): void
 }

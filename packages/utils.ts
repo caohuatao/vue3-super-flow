@@ -91,3 +91,30 @@ export function xAxisEqual(vectorA: Coordinate, vectorB: Coordinate): boolean {
   return vectorA[0] === vectorB[0]
 }
 
+export function toRawType(val: any): string {
+  return Object.prototype.toString.call(val).slice(8, -1).toLocaleLowerCase()
+}
+
+export function isFun(val: any): boolean {
+  return toRawType(val) === 'function'
+}
+
+export function isArray(val: any): boolean {
+  return toRawType(val) === 'array'
+}
+
+export function isBool(val: any): boolean {
+  return toRawType(val) === 'boolean'
+}
+
+export function isUndef(val: any): boolean {
+  return toRawType(val) === 'undefined'
+}
+
+export function isString(val: any): boolean {
+  return toRawType(val) === 'string'
+}
+
+export function isObject(val: any): boolean {
+  return toRawType(val) === 'object'
+}

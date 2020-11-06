@@ -4,11 +4,7 @@
  * Time: 9:52
  */
 
-import {
-  ref,
-  onMounted,
-  onUnmounted
-} from 'vue'
+import { ref, Ref, onMounted, onUnmounted } from 'vue'
 
 export function useMousemove() {
   const isMove = ref(false)
@@ -57,4 +53,33 @@ export function useMousemove() {
     offset,
     mousedown
   }
+}
+
+export function useShow(
+  openBack: null | ((done: () => void) => any) = null,
+  closeBack: null | ((done: () => void) => any) = null
+): [Ref<boolean>, () => void, () => void] {
+  const show = ref(false)
+  
+  function done(bol: boolean) {
+    return () => show.value = bol
+  }
+  
+  function close() {
+    if (closeBack) {
+      closeBack(done(false))
+    } else {
+      show.value = false
+    }
+  }
+  
+  function open() {
+    if (openBack) {
+      openBack(done(true))
+    } else {
+      show.value = true
+    }
+  }
+  
+  return [show, open, close]
 }

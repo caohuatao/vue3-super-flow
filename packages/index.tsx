@@ -4,10 +4,10 @@
  * Time: 17:46
  */
 
-import {
-  PropType,
-  defineComponent
-} from 'vue'
+import { ref, PropType, defineComponent, withModifiers } from 'vue'
+import { useShow } from './hooks'
+
+import SuperMenu from './menu'
 
 export default defineComponent({
   name: 'SuperFlow',
@@ -28,21 +28,30 @@ export default defineComponent({
       type: Array as PropType<LineItem[]>,
       default: () => []
     },
+    lineDesc: {
+      type: [Function, String] as PropType<((line: LineItem) => string) | string>,
+      default: ''
+    },
     lineStyle: {
       type: Function as PropType<(line: LineItem) => LineStyle>,
       default: null
-    },
-    lineDesc: {
-      type: Function as PropType<(line: LineItem) => string>,
-      default: ''
     }
   },
   setup(props, {emit, slots, attrs}) {
     return () => {
+      const showMenu = ref(false)
+      
+      function openMenu(evt: MouseEvent) {
+        showMenu.value = true
+      }
       
       return (
-        <div class="super-flow__container">
-  
+        <div
+          onContextmenu={withModifiers(openMenu, ['stop', 'prevent'])}
+          class="super-flow__container">
+          <SuperMenu
+          
+          />
         </div>
       )
     }

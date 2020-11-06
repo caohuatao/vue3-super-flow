@@ -1,18 +1,15 @@
-/// <reference path="../packages/types.d.ts" />
-
 /**
  * User: CHT
  * Date: 2020/11/3
  * Time: 17:36
  */
-
+/// <reference path="../packages/types.d.ts" />
 
 import { defineComponent, ref, reactive, computed, Ref } from 'vue'
 import SuperFlow from '../packages'
 import { useMousemove } from '../packages/hooks'
 import { addVector } from '../packages/utils'
 import './App.less'
-
 
 interface TemNodeItem {
   width: number
@@ -33,6 +30,11 @@ interface MousedownInfo {
 export default defineComponent({
   name: 'App',
   setup() {
+    const {offset, isMove, mousedown} = useMousemove()
+    const mousedownInfo = reactive<MousedownInfo>({
+      position: [0, 0],
+      current: null
+    })
     const temNodeItemList: TemItem[] = [
       {
         label: '节点1',
@@ -80,12 +82,6 @@ export default defineComponent({
       }
     ]
     
-    const {offset, isMove, mousedown} = useMousemove()
-    const mousedownInfo = reactive<MousedownInfo>({
-      position: [0, 0],
-      current: null
-    })
-    
     function nodeitemMouseDown(evt: MouseEvent, item: TemItem) {
       const {left, top} = (evt.currentTarget as HTMLElement).getBoundingClientRect()
       mousedownInfo.position = [left, top]
@@ -93,32 +89,40 @@ export default defineComponent({
       mousedown(evt)
     }
     
-    return () => {
-      const nodeItemList = temNodeItemList.map(item =>
-        <li
-          class="node-item"
-          onMousedown={evt => nodeitemMouseDown(evt, item)}>
-          {item.label}
-        </li>
+    function renderTemItemList() {
+      return temNodeItemList.map(item => (
+          <li
+            class="node-item"
+            onMousedown={evt => nodeitemMouseDown(evt, item)}>
+            {item.label}
+          </li>
+        )
       )
-      
-      const moveItemStyle = {
+    }
+    
+    function renderMoveTemItem() {
+      const style = {
         left: offset.value[0] + mousedownInfo.position[0] + 'px',
         top: offset.value[1] + mousedownInfo.position[1] + 'px'
       }
-      
-      return <>
+      return (
+        <li
+          class="node-item move-item"
+          v-show={isMove.value}
+          style={style}>
+          {mousedownInfo.current?.label}
+        </li>
+      )
+    }
+    
+    return () => (
+      <>
         <ul class="node-item__container">
-          {nodeItemList}
-          <li
-            class="node-item move-item"
-            v-show={isMove.value}
-            style={moveItemStyle}>
-            {mousedownInfo.current?.label}
-          </li>
+          {renderTemItemList()}
+          {renderMoveTemItem()}
         </ul>
         <SuperFlow />
       </>
-    }
+    )
   }
 })
