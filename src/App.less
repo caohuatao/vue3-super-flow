@@ -22,15 +22,18 @@ body {
     width         : 120px;
     height        : @height;
     margin        : 12px;
-    line-height   : @height;
     padding       : 0 12px;
-    border-radius : 4px;
-    box-shadow    : 0 0 6px rgba(0, 0, 0, .3);
     font-size     : 14px;
+    line-height   : @height;
+    border-radius : 3px;
+    box-shadow    : 5px 5px 15px rgba(0, 0, 0, .3);
     cursor        : pointer;
+    border        : 1px solid #B4B4B4;
+    color         : #333333;
 
     &.move-item {
       position         : fixed;
+      z-index          : 10;
       background-color : #FFFFFF;
       margin           : 0;
     }
@@ -40,6 +43,7 @@ body {
 .super-flow__container {
   width            : 800px;
   height           : 600px;
-  background-color : #f5f5f5;
+  background-color : #F5F5F5;
   overflow         : hidden;
+  position         : relative;
 }

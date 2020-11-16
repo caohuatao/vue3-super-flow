@@ -5,8 +5,17 @@
  */
 
 import { ref, Ref, onMounted, onUnmounted } from 'vue'
+import { minus } from './utils'
 
-export function useMousemove() {
+
+export function useMousemove(
+  moveCallBack?: (offset: Ref<Coordinate>) => any,
+  upCallBack?: () => any
+): [
+  Ref<boolean>,
+  Ref<Coordinate>,
+  (evt: MouseEvent) => void
+] {
   const isMove = ref(false)
   const offset = ref(<Coordinate>[0, 0])
   let mousedownCoordinate: Coordinate = [0, 0]
@@ -31,15 +40,17 @@ export function useMousemove() {
   function mouseup() {
     isMove.value = false
     isDown = false
+    upCallBack?.()
     document.body.style.userSelect = ''
   }
   
-  function mousemove(evt: MouseEvent) {
+  function mousemove(evt: MouseEvent): void {
     if (!isDown) return
     
     const [x, y] = mousedownCoordinate
     
     offset.value = [evt.clientX - x, evt.clientY - y]
+    moveCallBack?.(offset)
     
     if (!isMove.value) {
       isMove.value =
@@ -48,38 +59,54 @@ export function useMousemove() {
     }
   }
   
-  return {
+  return [
     isMove,
     offset,
     mousedown
-  }
+  ]
 }
 
-export function useShow(
-  openBack: null | ((done: () => void) => any) = null,
-  closeBack: null | ((done: () => void) => any) = null
-): [Ref<boolean>, () => void, () => void] {
+export function useShowMenu(): [
+  Ref<boolean>,
+  Ref<Coordinate>,
+  (evt: MouseEvent, offset: Coordinate) => void,
+  (evt: MouseEvent) => void,
+  (item: MenuItem, source: MenuSelectedItem) => void
+] {
   const show = ref(false)
+  const position = ref<Coordinate>([0, 0])
+  let currentOffset: Coordinate = [0, 0]
   
-  function done(bol: boolean) {
-    return () => show.value = bol
+  function open(evt: MouseEvent, offset: Coordinate) {
+    currentOffset = offset
+    position.value = [evt.clientX, evt.clientY]
+    show.value = true
   }
   
   function close() {
-    if (closeBack) {
-      closeBack(done(false))
-    } else {
-      show.value = false
-    }
+    show.value = false
   }
   
-  function open() {
-    if (openBack) {
-      openBack(done(true))
-    } else {
-      show.value = true
-    }
+  function itemClick(item: MenuItem, source: MenuSelectedItem) {
+    item.selected(source, minus(position.value, currentOffset))
+    close()
   }
   
-  return [show, open, close]
+  onMounted(() => {
+    document.addEventListener('mousedown', close)
+    window.addEventListener('scroll', close, true)
+  })
+  
+  onUnmounted(() => {
+    document.removeEventListener('mousedown', close)
+    window.removeEventListener('scroll', close, true)
+  })
+  
+  return [
+    show,
+    position,
+    open,
+    close,
+    itemClick
+  ]
 }

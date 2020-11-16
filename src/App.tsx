@@ -8,7 +8,7 @@
 import { defineComponent, ref, reactive, computed, Ref } from 'vue'
 import SuperFlow from '../packages'
 import { useMousemove } from '../packages/hooks'
-import { addVector } from '../packages/utils'
+import { addVector, uuid } from '../packages/utils'
 import './App.less'
 
 interface TemNodeItem {
@@ -30,11 +30,89 @@ interface MousedownInfo {
 export default defineComponent({
   name: 'App',
   setup() {
-    const {offset, isMove, mousedown} = useMousemove()
+    const [isMove, offset, mousedown] = useMousemove()
+    const nodeList = reactive<NodeItem[]>([])
+    const lineList = reactive<LineItem[]>([])
     const mousedownInfo = reactive<MousedownInfo>({
       position: [0, 0],
       current: null
     })
+    const graphMenu: MenuItem[][] = [
+      [
+        {
+          label: '全选',
+          selected(graph, coordinate) {}
+        }
+      ],
+      [
+        {
+          label: '开始节点',
+          disable(graph) {
+            return Boolean(nodeList.find(node => node.meta!.type === 'start'))
+          },
+          selected(graph, coordinate) {
+            nodeList.push({
+              id: uuid(),
+              width: 120,
+              height: 80,
+              coordinate,
+              meta: {
+                type: 'start',
+                label: '开始节点'
+              }
+            })
+          }
+        },
+        {
+          label: '审批节点',
+          selected(graph, coordinate) {
+            nodeList.push({
+              id: uuid(),
+              width: 120,
+              height: 80,
+              coordinate,
+              meta: {
+                type: 'approve',
+                label: '审批节点'
+              }
+            })
+          }
+        },
+        {
+          label: '抄送节点',
+          selected(graph, coordinate) {
+            nodeList.push({
+              id: uuid(),
+              width: 120,
+              height: 80,
+              coordinate,
+              meta: {
+                type: 'cc',
+                label: '抄送节点'
+              }
+            })
+          }
+        },
+        {
+          label: '结束节点',
+          disable(graph) {
+            return Boolean(nodeList.find(node => node.meta?.type === 'end'))
+          },
+          selected(graph, coordinate) {
+            nodeList.push({
+              id: uuid(),
+              width: 120,
+              height: 80,
+              coordinate,
+              meta: {
+                type: 'end',
+                label: '结束节点'
+              }
+            })
+          }
+        }
+      ]
+    ]
     const temNodeItemList: TemItem[] = [
       {
         label: '节点1',
@@ -82,6 +160,7 @@ export default defineComponent({
       }
     ]
     
+    
     function nodeitemMouseDown(evt: MouseEvent, item: TemItem) {
       const {left, top} = (evt.currentTarget as HTMLElement).getBoundingClientRect()
       mousedownInfo.position = [left, top]
@@ -115,13 +194,34 @@ export default defineComponent({
       )
     }
     
+    const superFlowSlots = {
+      default({node, drag}: { node: NodeItem, drag: (evt: MouseEvent) => void }) {
+        return (
+          <>
+            <header onMousedown={drag}>{node.meta!.label}</header>
+            <section>
+            
+            </section>
+          </>
+        )
+      },
+      menuItem(item: MenuItem) {
+        return (<span>{item.label}</span>)
+      }
+    }
+    
     return () => (
       <>
         <ul class="node-item__container">
           {renderTemItemList()}
           {renderMoveTemItem()}
         </ul>
-        <SuperFlow />
+        <SuperFlow
+          graphMenuList={graphMenu}
+          v-slots={superFlowSlots}
+          nodeList={nodeList}
+          lineList={lineList}
+        />
       </>
     )
   }

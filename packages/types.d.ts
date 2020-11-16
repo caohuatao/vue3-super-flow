@@ -3,11 +3,15 @@
  * Date: 2020/11/4
  * Time: 9:39
  */
-
 type LineId = string | number
 type NodeId = string | number
 type Coordinate = [number, number]
 type Color = string
+type MenuSelectedItem = NodeItem | LineItem | GraphInfo
+
+interface GraphInfo {
+  addNodeItem(): void
+}
 
 interface NodeItem {
   id: NodeId
@@ -39,9 +43,9 @@ interface LineStyle {
 
 interface MenuItem {
   label: string
-
-  disable?: boolean | ((o: NodeItem | LineItem) => boolean)
-  hidden?: boolean | ((o: NodeItem | LineItem) => boolean)
   
-  selected(o, coordinate: Coordinate): void
+  disable?: (o: MenuSelectedItem) => boolean
+  hidden?: (o: MenuSelectedItem) => boolean
+  
+  selected(o: MenuSelectedItem, coordinate: Coordinate): void
 }

@@ -3,6 +3,7 @@
  * Date: 2020/11/4
  * Time: 13:47
  */
+import { Slots } from 'vue'
 
 export function uuid(before = '', after = '') {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('')
@@ -91,30 +92,48 @@ export function xAxisEqual(vectorA: Coordinate, vectorB: Coordinate): boolean {
   return vectorA[0] === vectorB[0]
 }
 
+
+
 export function toRawType(val: any): string {
   return Object.prototype.toString.call(val).slice(8, -1).toLocaleLowerCase()
 }
 
-export function isFun(val: any): boolean {
+export function isFun<T>(val: any): val is T {
   return toRawType(val) === 'function'
 }
 
-export function isArray(val: any): boolean {
+export function isArray<T>(val: any): val is T {
   return toRawType(val) === 'array'
 }
 
-export function isBool(val: any): boolean {
+export function isBool(val: any): val is boolean {
   return toRawType(val) === 'boolean'
 }
 
-export function isUndef(val: any): boolean {
+export function isUndef(val: any): val is undefined {
   return toRawType(val) === 'undefined'
 }
 
-export function isString(val: any): boolean {
+export function isString(val: any): val is string {
   return toRawType(val) === 'string'
 }
 
-export function isObject(val: any): boolean {
+export function isObject(val: any): val is object {
   return toRawType(val) === 'object'
+}
+
+
+
+
+export function getSlot(slots: Slots, slot = 'default', data?: any) {
+  if (!slots || !Reflect.has(slots, slot)) {
+    return null
+  }
+  if (!isFun(slots[slot])) {
+    console.error(`${slot} is not a function!`)
+    return null
+  }
+  const slotFn = slots[slot]
+  if (!slotFn) return null
+  return slotFn(data)
 }
