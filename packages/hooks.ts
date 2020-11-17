@@ -5,8 +5,7 @@
  */
 
 import { ref, Ref, onMounted, onUnmounted } from 'vue'
-import { minus } from './utils'
-
+import { minus, multiply } from './utils'
 
 export function useMousemove(
   moveCallBack?: (offset: Ref<Coordinate>) => any,
@@ -66,7 +65,7 @@ export function useMousemove(
   ]
 }
 
-export function useShowMenu(): [
+export function useShowMenu(scale: number = 1): [
   Ref<boolean>,
   Ref<Coordinate>,
   (evt: MouseEvent, offset: Coordinate) => void,
@@ -88,7 +87,10 @@ export function useShowMenu(): [
   }
   
   function itemClick(item: MenuItem, source: MenuSelectedItem) {
-    item.selected(source, minus(position.value, currentOffset))
+    item.selected(
+      source,
+      multiply(minus(position.value, currentOffset), 1 / scale),
+    )
     close()
   }
   

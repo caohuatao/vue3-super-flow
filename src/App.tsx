@@ -113,6 +113,16 @@ export default defineComponent({
         }
       ]
     ]
+    const nodeMenu: MenuItem[][] = [
+      [
+        {
+          label: '删除',
+          selected(node, coordinate) {
+            console.log(arguments)
+          }
+        }
+      ]
+    ]
     const temNodeItemList: TemItem[] = [
       {
         label: '节点1',
@@ -160,7 +170,6 @@ export default defineComponent({
       }
     ]
     
-    
     function nodeitemMouseDown(evt: MouseEvent, item: TemItem) {
       const {left, top} = (evt.currentTarget as HTMLElement).getBoundingClientRect()
       mousedownInfo.position = [left, top]
@@ -198,7 +207,11 @@ export default defineComponent({
       default({node, drag}: { node: NodeItem, drag: (evt: MouseEvent) => void }) {
         return (
           <>
-            <header onMousedown={drag}>{node.meta!.label}</header>
+            <header
+              class="ellipsis"
+              onMousedown={drag}>
+              {node.meta!.label}
+            </header>
             <section>
             
             </section>
@@ -212,15 +225,17 @@ export default defineComponent({
     
     return () => (
       <>
-        <ul class="node-item__container">
+        <ul class="node-item__container clearfix">
           {renderTemItemList()}
           {renderMoveTemItem()}
         </ul>
         <SuperFlow
           graphMenuList={graphMenu}
+          nodeMenuList={nodeMenu}
           v-slots={superFlowSlots}
           nodeList={nodeList}
           lineList={lineList}
+          scale={1}
         />
       </>
     )

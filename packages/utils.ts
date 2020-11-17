@@ -3,7 +3,6 @@
  * Date: 2020/11/4
  * Time: 13:47
  */
-import { Slots } from 'vue'
 
 export function uuid(before = '', after = '') {
   const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('')
@@ -33,12 +32,10 @@ export function getOffset(evt: MouseEvent, target?: Element) {
   return [clientX - left, clientY - top]
 }
 
-// 向量相加
 export function addVector(vectorA: Coordinate, vectorB: Coordinate): Coordinate {
   return [vectorA[0] + vectorB[0], vectorA[1] + vectorB[1]]
 }
 
-//  向量乘以常量系数
 export function multiply(vector: Coordinate, k: number): Coordinate {
   return [vector[0] * k, vector[1] * k]
 }
@@ -51,47 +48,38 @@ export function minus(pointA: Coordinate, pointB: Coordinate): Coordinate {
   return [pointA[0] - pointB[0], pointA[1] - pointB[1]]
 }
 
-// 向量点积
 export function dotProduct(vectorA: Coordinate, vectorB: Coordinate): number {
   return vectorA[0] * vectorB[0] + vectorA[1] * vectorB[1]
 }
 
-// 向量叉乘
 export function cross(vectorA: Coordinate, vectorB: Coordinate): number {
   return vectorA[0] * vectorB[1] - vectorA[1] * vectorB[0]
 }
 
-// 向量的单位向量
 export function unitVector(vector: Coordinate): Coordinate {
   const m = Math.sqrt(vector[0] * vector[0] + vector[1] * vector[1])
   return [vector[0] / m, vector[1] / m]
 }
 
-// 判断向量 x,y 坐标相等
 export function equals(vector: Coordinate, target: Coordinate): boolean {
   return vector[0] === target[0] && vector[1] === target[1]
 }
 
-// 向量夹角
 export function angle(vector: Coordinate): number {
   return Math.round(180 / Math.PI * Math.atan2(vector[1], vector[0])) + 180
 }
 
-// 判断向量是否平行
 export function parallel(vectorA: Coordinate, vectorB: Coordinate): boolean {
   return vectorA[0] * vectorB[1] - vectorA[1] * vectorB[0] === 0
 }
 
-// 判断 y 轴相等
 export function yAxisEqual(vectorA: Coordinate, vectorB: Coordinate): boolean {
   return vectorA[1] === vectorB[1]
 }
 
-// 判断 x 轴相等
 export function xAxisEqual(vectorA: Coordinate, vectorB: Coordinate): boolean {
   return vectorA[0] === vectorB[0]
 }
-
 
 
 export function toRawType(val: any): string {
@@ -104,6 +92,10 @@ export function isFun<T>(val: any): val is T {
 
 export function isArray<T>(val: any): val is T {
   return toRawType(val) === 'array'
+}
+
+export function isNumber(val: any): val is number {
+  return toRawType(val) === 'number'
 }
 
 export function isBool(val: any): val is boolean {
@@ -122,18 +114,10 @@ export function isObject(val: any): val is object {
   return toRawType(val) === 'object'
 }
 
-
-
-
-export function getSlot(slots: Slots, slot = 'default', data?: any) {
-  if (!slots || !Reflect.has(slots, slot)) {
-    return null
+export function arrayExchange(list: any[], oldIdx: number, newIdx?: number): void {
+  if (!isNumber(newIdx)) {
+    newIdx = list.length - 1
   }
-  if (!isFun(slots[slot])) {
-    console.error(`${slot} is not a function!`)
-    return null
-  }
-  const slotFn = slots[slot]
-  if (!slotFn) return null
-  return slotFn(data)
+  list.splice(newIdx, 0, ...list.splice(oldIdx, 1))
 }
+

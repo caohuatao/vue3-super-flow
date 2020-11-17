@@ -10,10 +10,27 @@ body {
   padding : 0;
 }
 
+.clearfix::after {
+  content     : '';
+  clear       : both;
+  height      : 0;
+  line-height : 0;
+  font-size   : 0;
+  display     : block;
+}
+
+.ellipsis {
+  white-space   : nowrap;
+  text-overflow : ellipsis;
+  overflow      : hidden;
+  word-wrap     : break-word;
+}
+
 .node-item__container {
   list-style : none;
   padding    : 0;
   margin     : 0;
+
 
   .node-item {
     @height       : 32px;
@@ -44,6 +61,21 @@ body {
   width            : 800px;
   height           : 600px;
   background-color : #F5F5F5;
-  overflow         : hidden;
-  position         : relative;
+
+  .super-flow__node {
+    border           : 1px solid #B4B4B4;
+    background-color : #FFFFFF;
+    box-shadow       : 0 0 15px rgba(0, 0, 0, .3);
+    border-radius    : 4px;
+    overflow         : hidden;
+
+    > header {
+      font-size        : 14px;
+      padding          : 0 6px;
+      line-height      : 2;
+      cursor           : move;
+      background-color : #000000;
+      color            : #F5F5F5;
+    }
+  }
 }

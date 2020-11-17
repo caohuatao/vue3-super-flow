@@ -4,15 +4,16 @@
  * Time: 15:15
  */
 import { defineComponent, PropType, withModifiers } from 'vue'
-import { isFun, getSlot } from './utils'
+import { isFun } from './utils'
 import { CSSProperties } from '@vue/runtime-dom'
 
 function menuStyle(position: Coordinate): CSSProperties {
   const [left, top] = position
-  return {
+  const result: CSSProperties = {
     left: left + 'px',
     top: top + 'px'
   }
+  return result
 }
 
 export default defineComponent({
@@ -39,7 +40,7 @@ export default defineComponent({
     
     function renderMenuItem(subList: MenuItem[]) {
       return subList.map(item => {
-        const isDisable: boolean = item.disable?.(props.source) || false
+        const isDisable: boolean = item.disable?.(props.source || undefined) || false
         const clsList = ['super-menu__item']
         if (isDisable) {
           clsList.push('is-disable')
@@ -55,14 +56,16 @@ export default defineComponent({
       })
     }
     
-    function renderMenuGroup() {
-      return props.menuList.map((subList: MenuItem[]) => {
-        subList = subList.filter(item => !(item.hidden?.(props.source) || false))
-        if (subList.length) {
-          return (
-            <ul class="super-menu__sub-list">{renderMenuItem(subList)}</ul>
-          )
-        }
+    function renderMenuGroup(menuList: MenuItem[][]) {
+      return menuList.map((subList: MenuItem[]) => (
+        <ul class="super-menu__sub-list">{renderMenuItem(subList)}</ul>
+      ))
+    }
+    
+    function filterSublist() {
+      return props.menuList.filter((subList: MenuItem[]) => {
+        subList = subList.filter(item => !(item.hidden?.(props.source || undefined) || false))
+        return subList.length
       })
     }
     
@@ -70,13 +73,20 @@ export default defineComponent({
       if (!isDisable) props.itemClick(item, props.source)
     }
     
-    return () => (
-      <div
-        class="super-menu__container"
-        style={menuStyle(props.position)}>
-        {renderMenuGroup()}
-      </div>
-    )
+    return () => {
+      const menuList = filterSublist()
+      const cls = ['super-menu__container']
+      if (menuList.length === 0) {
+        cls.push('hidden')
+      }
+      return (
+        <div
+          class={cls.join(' ')}
+          style={menuStyle(props.position)}>
+          {renderMenuGroup(menuList)}
+        </div>
+      )
+    }
   }
 })
 

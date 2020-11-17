@@ -3,6 +3,7 @@
  * Date: 2020/11/4
  * Time: 9:39
  */
+
 type LineId = string | number
 type NodeId = string | number
 type Coordinate = [number, number]
