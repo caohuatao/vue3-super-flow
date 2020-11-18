@@ -8,18 +8,16 @@ type LineId = string | number
 type NodeId = string | number
 type Coordinate = [number, number]
 type Color = string
-type MenuSelectedItem = NodeItem | LineItem | GraphInfo
+type MenuSelectedItem = NodeItem | LineItem | null
+type MenuSelectedHandler = GraphHandler | NodeHandler | LineHandler
 
-interface GraphInfo {
-  addNodeItem(): void
-}
 
 interface NodeItem {
   id: NodeId
   width: number
   height: number
   coordinate: Coordinate
-  meta?: { [key: string]: any }
+  meta?: {[key: string]: any}
 }
 
 interface LineItem {
@@ -28,7 +26,7 @@ interface LineItem {
   endId: NodeId
   startAt: Coordinate
   endAt: Coordinate
-  meta?: { [key: string]: any }
+  meta?: {[key: string]: any}
 }
 
 interface LineStyle {
@@ -45,8 +43,34 @@ interface LineStyle {
 interface MenuItem {
   label: string
   
-  disable?: (o: MenuSelectedItem) => boolean
-  hidden?: (o: MenuSelectedItem) => boolean
+  disable?: (selected: MenuSelectedItem) => boolean
+  hidden?: (selected: MenuSelectedItem) => boolean
   
-  selected(o: MenuSelectedItem, coordinate: Coordinate): void
+  selected(
+    coordinate: Coordinate,
+    handler: MenuSelectedHandler,
+    selected: MenuSelectedItem
+  ): void
 }
+
+
+interface GraphHandler {
+
+}
+
+interface NodeHandler {
+  remove(): void
+}
+
+interface LineHandler {
+
+}
+
+
+interface MenuConfig {
+  source: MenuSelectedItem
+  list: MenuItem[][]
+  handler: MenuSelectedHandler
+}
+
+

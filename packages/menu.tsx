@@ -3,9 +3,9 @@
  * Date: 2020/11/4
  * Time: 15:15
  */
-import { defineComponent, PropType, withModifiers } from 'vue'
-import { isFun } from './utils'
-import { CSSProperties } from '@vue/runtime-dom'
+import {defineComponent, PropType, withModifiers} from 'vue'
+import {isFun} from './utils'
+import {CSSProperties} from '@vue/runtime-dom'
 
 function menuStyle(position: Coordinate): CSSProperties {
   const [left, top] = position
@@ -27,10 +27,6 @@ export default defineComponent({
       type: Object as PropType<MenuSelectedItem>,
       default: null
     },
-    itemClick: {
-      type: Function as PropType<(item: MenuItem, source: MenuSelectedItem) => void>,
-      default: (item: MenuItem, source: MenuSelectedItem) => null
-    },
     menuList: {
       type: Array as PropType<MenuItem[][]>,
       default: () => []
@@ -40,50 +36,54 @@ export default defineComponent({
     
     function renderMenuItem(subList: MenuItem[]) {
       return subList.map(item => {
-        const isDisable: boolean = item.disable?.(props.source || undefined) || false
+        const isDisable: boolean = item.disable?.(props.source) || false
         const clsList = ['super-menu__item']
         if (isDisable) {
           clsList.push('is-disable')
         }
         return (
           <li
-            onMousedown={withModifiers(() => null, ['stop', 'prevent'])}
-            onClick={() => itemClick(isDisable, item)}
-            class={clsList.join(' ')}>
-            {slots.default?.(item) || item.label}
+            onMousedown={ withModifiers(() => null, ['stop', 'prevent']) }
+            onClick={ () => isDisable ? null : emit('menuSelected', item) }
+            class={ clsList.join(' ') }>
+            { slots.default?.(item) || item.label }
           </li>
         )
       })
     }
     
-    function renderMenuGroup(menuList: MenuItem[][]) {
-      return menuList.map((subList: MenuItem[]) => (
-        <ul class="super-menu__sub-list">{renderMenuItem(subList)}</ul>
-      ))
-    }
-    
-    function filterSublist() {
-      return props.menuList.filter((subList: MenuItem[]) => {
-        subList = subList.filter(item => !(item.hidden?.(props.source || undefined) || false))
-        return subList.length
+    function filterMenuList() {
+      const menuList: MenuItem[][] = []
+      props.menuList.forEach((subList: MenuItem[]) => {
+        const filterList = subList.filter(item => !Boolean(item.hidden?.(props.source)))
+        if (filterList.length) {
+          menuList.push(filterList)
+        }
       })
-    }
-    
-    function itemClick(isDisable: boolean, item: MenuItem) {
-      if (!isDisable) props.itemClick(item, props.source)
+      return menuList
     }
     
     return () => {
-      const menuList = filterSublist()
-      const cls = ['super-menu__container']
+      const menuList = filterMenuList()
+      const clsList = ['super-menu__container']
       if (menuList.length === 0) {
-        cls.push('hidden')
+        clsList.push('hidden')
       }
+      
       return (
         <div
-          class={cls.join(' ')}
-          style={menuStyle(props.position)}>
-          {renderMenuGroup(menuList)}
+          class={ clsList.join(' ') }
+          style={ {
+            left: props.position[0] + 'px',
+            top: props.position[1] + 'px'
+          } }>
+          {
+            menuList.map((subList: MenuItem[]) => (
+              <ul class="super-menu__sub-list">
+                { renderMenuItem(subList) }
+              </ul>
+            ))
+          }
         </div>
       )
     }

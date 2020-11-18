@@ -5,16 +5,16 @@
  */
 /// <reference path="../packages/types.d.ts" />
 
-import { defineComponent, ref, reactive, computed, Ref } from 'vue'
+import {defineComponent, ref, reactive, computed, Ref} from 'vue'
 import SuperFlow from '../packages'
-import { useMousemove } from '../packages/hooks'
-import { addVector, uuid } from '../packages/utils'
+import {useMousemove} from '../packages/hooks'
+import {addVector, uuid} from '../packages/utils'
 import './App.less'
 
 interface TemNodeItem {
   width: number
   height: number
-  meta?: { [key: string]: any }
+  meta?: {[key: string]: any}
 }
 
 interface TemItem {
@@ -50,7 +50,7 @@ export default defineComponent({
           disable(graph) {
             return Boolean(nodeList.find(node => node.meta!.type === 'start'))
           },
-          selected(graph, coordinate) {
+          selected(coordinate) {
             nodeList.push({
               id: uuid(),
               width: 120,
@@ -65,7 +65,7 @@ export default defineComponent({
         },
         {
           label: '审批节点',
-          selected(graph, coordinate) {
+          selected(coordinate) {
             nodeList.push({
               id: uuid(),
               width: 120,
@@ -80,7 +80,7 @@ export default defineComponent({
         },
         {
           label: '抄送节点',
-          selected(graph, coordinate) {
+          selected(coordinate) {
             nodeList.push({
               id: uuid(),
               width: 120,
@@ -98,7 +98,7 @@ export default defineComponent({
           disable(graph) {
             return Boolean(nodeList.find(node => node.meta?.type === 'end'))
           },
-          selected(graph, coordinate) {
+          selected(coordinate) {
             nodeList.push({
               id: uuid(),
               width: 120,
@@ -117,8 +117,11 @@ export default defineComponent({
       [
         {
           label: '删除',
-          selected(node, coordinate) {
-            console.log(arguments)
+          hidden(selected) {
+            return (selected as NodeItem).meta!.type === 'start'
+          },
+          selected(coordinate, handler, selected) {
+            (handler as NodeHandler).remove()
           }
         }
       ]
@@ -181,8 +184,8 @@ export default defineComponent({
       return temNodeItemList.map(item => (
           <li
             class="node-item"
-            onMousedown={evt => nodeitemMouseDown(evt, item)}>
-            {item.label}
+            onMousedown={ evt => nodeitemMouseDown(evt, item) }>
+            { item.label }
           </li>
         )
       )
@@ -196,48 +199,44 @@ export default defineComponent({
       return (
         <li
           class="node-item move-item"
-          v-show={isMove.value}
-          style={style}>
-          {mousedownInfo.current?.label}
+          v-show={ isMove.value }
+          style={ style }>
+          { mousedownInfo.current?.label }
         </li>
       )
     }
     
-    const superFlowSlots = {
-      default({node, drag}: { node: NodeItem, drag: (evt: MouseEvent) => void }) {
-        return (
-          <>
-            <header
-              class="ellipsis"
-              onMousedown={drag}>
-              {node.meta!.label}
-            </header>
-            <section>
-            
-            </section>
-          </>
-        )
-      },
-      menuItem(item: MenuItem) {
-        return (<span>{item.label}</span>)
-      }
-    }
-    
-    return () => (
-      <>
-        <ul class="node-item__container clearfix">
-          {renderTemItemList()}
-          {renderMoveTemItem()}
-        </ul>
-        <SuperFlow
-          graphMenuList={graphMenu}
-          nodeMenuList={nodeMenu}
-          v-slots={superFlowSlots}
-          nodeList={nodeList}
-          lineList={lineList}
-          scale={1}
-        />
-      </>
-    )
+    return () => (<>
+      <ul class="node-item__container clearfix">
+        { renderTemItemList() }
+        { renderMoveTemItem() }
+      </ul>
+      <SuperFlow
+        graphMenuList={ graphMenu }
+        nodeMenuList={ nodeMenu }
+        v-slots={ {
+          default({node, drag}: {node: NodeItem, drag: (evt: MouseEvent) => void}) {
+            return (
+              <>
+                <header
+                  class="ellipsis"
+                  onMousedown={ drag }>
+                  { node.meta!.label }
+                </header>
+                <section>
+                
+                </section>
+              </>
+            )
+          },
+          menuItem(item: MenuItem) {
+            return (<span>{ item.label }</span>)
+          }
+        } }
+        nodeList={ nodeList }
+        lineList={ lineList }
+        scale={ 1 }
+      />
+    </>)
   }
 })

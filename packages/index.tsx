@@ -4,33 +4,13 @@
  * Time: 17:46
  */
 
-import {
-  ref,
-  unref,
-  PropType,
-  defineComponent,
-  withModifiers,
-  provide,
-  Ref,
-  CSSProperties
-} from 'vue'
-
-import { useMousemove, useShowMenu } from './hooks'
-import { addVector, arrayExchange, differ, multiply } from './utils'
+import {ref, unref, PropType, defineComponent, withModifiers, provide, Ref} from 'vue'
+import {useMenu, useMoveNode} from './hooks'
+import {addVector, arrayExchange, differ, multiply} from './utils'
 import FlowMenu from './menu'
 import FlowNode from './node'
 
 import './index.less'
-
-interface Events {
-  onNodeMousedown: [string]
-}
-
-enum MenuType {
-  GRAPH,
-  NODE,
-  LINE
-}
 
 export default defineComponent({
   name: 'SuperFlow',
@@ -40,7 +20,7 @@ export default defineComponent({
       default: 1
     },
     origin: {
-      type: Array as unknown as PropType<Coordinate>,
+      type: Array as any as PropType<Coordinate>,
       default: () => [0, 0]
     },
     nodeList: {
@@ -52,8 +32,8 @@ export default defineComponent({
       default: () => []
     },
     lineDesc: {
-      type: [Function, String] as PropType<((line: LineItem) => string) | string>,
-      default: ''
+      type: Function as PropType<(line: LineItem) => string>,
+      default: () => ''
     },
     lineStyle: {
       type: Function as PropType<(line: LineItem) => LineStyle>,
@@ -72,109 +52,84 @@ export default defineComponent({
       default: () => []
     }
   },
-  
   setup(props, {emit, slots, attrs}) {
-    provide('scale', props.scale)
-    provide('origin', props.origin)
     provide('nodeList', props.nodeList)
+    
     const scale = props.scale > 0 ? props.scale : 1
-    
-    
-    
     const root = ref<Element | null>(null)
-    const [menuShow, menuPosition, menuOpen, menuClose, menuItemClick] = useShowMenu(scale)
-    const [nodeMove, nodeOffset, nodeMousedown] = useMousemove(nodeMoveCallback)
-
-    let moveNodeStartCoordinate: Coordinate = [0, 0]
-    let menuSource: MenuSelectedItem
-    let currentMoveNode: NodeItem
-    let menuList: MenuItem[][] = props.graphMenuList
+    const graphHandler = {}
     
-    function nodeMousedownHandler(evt: MouseEvent, node: NodeItem, idx: number) {
-      currentMoveNode = node
-      moveNodeStartCoordinate = differ(props.origin, node.coordinate)
-      nodeMousedown(evt)
-      arrayExchange(props.nodeList, idx)
-    }
+    const {
+      nodeMove,
+      nodeOffset,
+      nodeMousedown
+    } = useMoveNode(props.origin, scale, props.nodeList)
     
-    function nodeMoveCallback(offset: Ref<Coordinate>) {
-      currentMoveNode!.coordinate = addVector(
-        moveNodeStartCoordinate,
-        multiply(unref(offset), 1 / scale)
-      )
-    }
+    const {
+      menuConfig,
+      menuShow,
+      menuPosition,
+      menuClose,
+      menuOpen,
+      menuSelected
+    } = useMenu(scale, root, {
+      source: null,
+      list: props.graphMenuList,
+      handler: graphHandler
+    })
     
-    function addNodeItem() {}
-    
-    function removeNodeItem() {}
-    
-    function removeLineItem() {}
     
     function renderNodeList() {
-      return props.nodeList.map((node: NodeItem, idx) => (
-        <FlowNode
-          key={node.id}
-          node={node}
-          onNodeMousedown={(evt: MouseEvent) => nodeMousedownHandler(evt, node, idx)}
-          onNodeContextmenu={(evt: MouseEvent) => openMenuHandler(evt, MenuType.NODE, node)}
-          v-slots={
-            {default: slots.default}
+      return props.nodeList.map((node: NodeItem, idx) => {
+        const nodeHandler: NodeHandler = {
+          remove() {
+            props.nodeList.splice(idx, 1)
           }
-        />
-      ))
-    }
-    
-    function openMenuHandler(evt: MouseEvent, type = MenuType.GRAPH, source?: MenuSelectedItem) {
-      const {top, left} = unref(root)!.getBoundingClientRect()
-      
-      if(type === MenuType.LINE) {
-        menuList = props.lineMenuList
-      } else if(type === MenuType.NODE) {
-        menuList = props.nodeMenuList
-      } else {
-        menuList = props.graphMenuList
-      }
-      
-      if (source) {
-        menuSource = source
-      } else {
-        menuSource = {
-          addNodeItem
         }
-      }
-      
-      menuOpen(evt, [left, top])
+        const onNodeMousedown = (evt: MouseEvent) => {
+          nodeMousedown(evt, node, idx)
+        }
+        const onNodeContextMenu = (evt: MouseEvent) => {
+          menuOpen(evt, {
+            list: props.nodeMenuList,
+            handler: nodeHandler,
+            source: node
+          })
+        }
+        
+        return (
+          <FlowNode
+            key={ node.id }
+            node={ node }
+            onNodeMousedown={ onNodeMousedown }
+            onNodeContextmenu={ onNodeContextMenu }
+            v-slots={ {default: slots.default} }
+          />
+        )
+      })
     }
     
-    function containerStyle(): CSSProperties {
-      return {
-        position: 'relative',
-        transform: `scale(${scale})`,
-        transformOrigin: `${props.origin[0]}px ${props.origin[1]}px`
-      }
-    }
-    
-    return () => (
-      <>
-        <div
-          {...attrs}
-          class="super-flow__container"
-          ref={root}
-          style={containerStyle()}
-          onContextmenu={withModifiers(openMenuHandler, ['stop', 'prevent'])}>
-          {renderNodeList()}
-        </div>
-        <FlowMenu
-          v-show={unref(menuShow)}
-          position={unref(menuPosition)}
-          source={menuSource!}
-          itemClick={menuItemClick}
-          menuList={menuList}
-          v-slots={
-            {default: slots.menuItem}
-          }
-        />
-      </>
-    )
+    return () => (<>
+      <div
+        { ...attrs }
+        ref={ root }
+        class="super-flow__container"
+        style={ {
+          position: 'relative',
+          transform: `scale(${ scale })`,
+          transformOrigin: `${ props.origin[0] }px ${ props.origin[1] }px`
+        } }
+        onContextmenu={ withModifiers(menuOpen, ['stop', 'prevent']) }>
+        { renderNodeList() }
+      </div>
+      <FlowMenu
+        v-show={ unref(menuShow) }
+        position={ unref(menuPosition) }
+        source={ menuConfig.source }
+        menuList={ menuConfig.list }
+        onMenuSelected={ menuSelected }
+        v-slots={ {default: slots.menuItem} }
+      />
+    </>)
   }
 })

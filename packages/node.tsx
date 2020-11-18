@@ -22,34 +22,22 @@ export default defineComponent({
   },
   setup(props, {emit, slots, attrs}) {
     const node = props.node
-    const scale = inject<number>('scale')!
-    const origin = inject<Coordinate>('origin')!
-    
-    function nodeStyle(): CSSProperties {
-      return {
-        left: node.coordinate[0] + 'px',
-        top: node.coordinate[1] + 'px',
-        width: node.width + 'px',
-        height: node.height + 'px',
-        position: 'absolute'
-      }
-    }
-    
-    function drag(evt: MouseEvent) {
-      emit('nodeMousedown', evt)
-    }
-    
-    function contextmenu(evt: MouseEvent) {
-      emit('nodeContextmenu', evt)
-    }
+    const drag = (evt: MouseEvent) => emit('nodeMousedown', evt)
+    const contextmenuFun = (evt: MouseEvent) => emit('nodeContextmenu', evt)
     
     return () => (
       <div
-        style={nodeStyle()}
-        onContextmenu={withModifiers(contextmenu, ['stop', 'prevent'])}
-        tabindex={-1}
+        style={ {
+          left: node.coordinate[0] + 'px',
+          top: node.coordinate[1] + 'px',
+          width: node.width + 'px',
+          height: node.height + 'px',
+          position: 'absolute'
+        } }
+        onContextmenu={ withModifiers(contextmenuFun, ['stop', 'prevent']) }
+        tabindex={ -1 }
         class="super-flow__node">
-        {slots.default?.({node, drag})}
+        { slots.default?.({node, drag}) }
       </div>
     )
   }
