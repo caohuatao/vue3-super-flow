@@ -15,7 +15,11 @@
     "types": [
       "webpack-env"
     ],
-    "typeRoots": ["./node_modules/@types/", "./packages/types.d.ts"],
+    "typeRoots": [
+      "./node_modules/@types/",
+      "./src/",
+      "./packages/"
+    ],
     "paths": {
       "@/*": [
         "src/*"

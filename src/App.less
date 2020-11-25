@@ -77,5 +77,39 @@ body {
       background-color : #000000;
       color            : #F5F5F5;
     }
+
+    > .side {
+      @size    : 10px;
+      position : absolute;
+      cursor: crosshair;
+
+      &-top {
+        height : @size;
+        top    : -@size / 2;
+        left   : 0;
+        right  : 0;
+      }
+
+      &-right {
+        width  : @size;
+        top    : 0;
+        right  : -@size / 2;
+        bottom : 0;
+      }
+
+      &-bottom {
+        height : @size;
+        bottom : -@size / 2;
+        left   : 0;
+        right  : 0;
+      }
+
+      &-left {
+        width  : @size;
+        top    : 0;
+        left   : -@size / 2;
+        bottom : 0;
+      }
+    }
   }
 }

@@ -4,12 +4,14 @@
  * Time: 17:36
  */
 /// <reference path="../packages/types.d.ts" />
+/// <reference path="../packages/shim-tsx.d.ts" />
 
-import {defineComponent, ref, reactive, computed, Ref} from 'vue'
+import {defineComponent, ref, reactive, computed, Ref, onMounted} from 'vue'
 import SuperFlow from '../packages'
-import {useMousemove} from '../packages/hooks'
+import {useDrag} from '../packages/hooks'
 import {addVector, uuid} from '../packages/utils'
 import './App.less'
+import node from '../packages/node'
 
 interface TemNodeItem {
   width: number
@@ -30,7 +32,7 @@ interface MousedownInfo {
 export default defineComponent({
   name: 'App',
   setup() {
-    const [isMove, offset, mousedown] = useMousemove()
+    const [isMove, offset, mousedown] = useDrag()
     const nodeList = reactive<NodeItem[]>([])
     const lineList = reactive<LineItem[]>([])
     const mousedownInfo = reactive<MousedownInfo>({
@@ -173,7 +175,7 @@ export default defineComponent({
       }
     ]
     
-    function nodeitemMouseDown(evt: MouseEvent, item: TemItem) {
+    function nodeItemMouseDown(evt: MouseEvent, item: TemItem) {
       const {left, top} = (evt.currentTarget as HTMLElement).getBoundingClientRect()
       mousedownInfo.position = [left, top]
       mousedownInfo.current = item
@@ -184,7 +186,7 @@ export default defineComponent({
       return temNodeItemList.map(item => (
           <li
             class="node-item"
-            onMousedown={ evt => nodeitemMouseDown(evt, item) }>
+            onMousedown={ evt => nodeItemMouseDown(evt, item) }>
             { item.label }
           </li>
         )
@@ -206,6 +208,41 @@ export default defineComponent({
       )
     }
     
+    function renderFlowNode(node: NodeItem) {
+      return (
+        <>
+          <header
+            class="ellipsis"
+            flow-node-drag>
+            { node.meta!.label }
+          </header>
+          <section>
+          
+          </section>
+          <span
+            class="side side-top"
+            flow-node-initiate={ `${ node.width / 2 },0` }
+          />
+          <span
+            class="side side-right"
+            flow-node-initiate={ `${ node.width },${ node.height / 2 }` }
+          />
+          <span
+            class="side side-bottom"
+            flow-node-initiate={ `${ node.width / 2 },${ node.height }` }
+          />
+          <span
+            class="side side-left"
+            flow-node-initiate={ `${ node.width / 2 },${ node.height }` }
+          />
+        </>
+      )
+    }
+    
+    function renderMenuItem(item: MenuItem) {
+      return (<span>{ item.label }</span>)
+    }
+    
     return () => (<>
       <ul class="node-item__container clearfix">
         { renderTemItemList() }
@@ -214,28 +251,13 @@ export default defineComponent({
       <SuperFlow
         graphMenuList={ graphMenu }
         nodeMenuList={ nodeMenu }
-        v-slots={ {
-          default({node, drag}: {node: NodeItem, drag: (evt: MouseEvent) => void}) {
-            return (
-              <>
-                <header
-                  class="ellipsis"
-                  onMousedown={ drag }>
-                  { node.meta!.label }
-                </header>
-                <section>
-                
-                </section>
-              </>
-            )
-          },
-          menuItem(item: MenuItem) {
-            return (<span>{ item.label }</span>)
-          }
-        } }
         nodeList={ nodeList }
         lineList={ lineList }
         scale={ 1 }
+        v-slots={ {
+          default: renderFlowNode,
+          menuItem: renderMenuItem
+        } }
       />
     </>)
   }

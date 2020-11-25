@@ -4,15 +4,14 @@
  * Time: 9:52
  */
 
-import {ref, Ref, onMounted, onUnmounted, unref} from 'vue'
+import {ref, reactive, Ref, onMounted, onUnmounted, unref} from 'vue'
 import {addVector, arrayExchange, differ, minus, multiply} from './utils'
 
 
-type UseMouseMoveReturn = [Ref<boolean>, Ref<Coordinate>, (evt: MouseEvent) => void]
-type MoveCallback = (offset: Ref<Coordinate>) => any
-type upCallback = () => any
-
-export function useMousemove(moveCallBack?: MoveCallback, upCallBack?: upCallback): UseMouseMoveReturn {
+export function useDrag(
+  moveCallBack?: (offset: Ref<Coordinate>) => any,
+  upCallBack?: (...arg: any) => any
+): [Ref<boolean>, Ref<Coordinate>, (evt: MouseEvent) => void] {
   const isMove = ref(false)
   const offset = ref(<Coordinate>[0, 0])
   let mousedownCoordinate: Coordinate = [0, 0]
@@ -27,6 +26,7 @@ export function useMousemove(moveCallBack?: MoveCallback, upCallBack?: upCallbac
     document.removeEventListener('mousemove', mousemove)
     document.removeEventListener('mouseup', mouseup)
   })
+  
   
   function mousedown(evt: MouseEvent) {
     isDown = true
@@ -63,8 +63,13 @@ export function useMousemove(moveCallBack?: MoveCallback, upCallBack?: upCallbac
   ]
 }
 
-export function useMoveNode(origin: Coordinate, scale: number, nodeList: NodeItem[]) {
-  const [nodeMove, nodeOffset, mousedown] = useMousemove(nodeMoveCallback)
+
+export function useDragNode(
+  origin: Coordinate,
+  scale: number,
+  nodeList: NodeItem[]
+) {
+  const [nodeMove, nodeOffset, mousedown] = useDrag(nodeMoveCallback)
   let start: Coordinate = [0, 0]
   let current: NodeItem
   
@@ -90,40 +95,21 @@ export function useMoveNode(origin: Coordinate, scale: number, nodeList: NodeIte
 }
 
 
-
 interface MenuConfig {
   list: MenuItem[][]
-  handler: GraphHandler | NodeHandler | LineHandler
-  source: NodeItem | LineItem | null
+  handler: MenuSelectedHandler
+  source: MenuSelectedItem
 }
 
-interface UseMenuReturn {
-  menuShow: Ref<boolean>
-  menuPosition: Ref<Coordinate>
-  menuConfig: MenuConfig
-  
-  menuOpen(evt: MouseEvent, config: MenuConfig): void
-  
-  menuClose(): void
-  
-  menuSelected(item: MenuItem): void
-}
-
-export function useMenu(scale: number = 1, root: Ref<Element | null>, baseConfig: MenuConfig): UseMenuReturn {
+export function useMenu(
+  scale: number = 1,
+  root: Ref<Element | null>,
+  baseConfig: MenuConfig
+) {
   const menuShow = ref<boolean>(false)
   const menuPosition = ref<Coordinate>([0, 0])
   const menuConfig: MenuConfig = {...baseConfig}
   let offset: Coordinate = [0, 0]
-  
-  onMounted(() => {
-    document.addEventListener('mousedown', menuClose)
-    window.addEventListener('scroll', menuClose, true)
-  })
-  
-  onUnmounted(() => {
-    document.removeEventListener('mousedown', menuClose)
-    window.removeEventListener('scroll', menuClose, true)
-  })
   
   function menuOpen(evt: MouseEvent, config: MenuConfig = baseConfig) {
     Object.assign(menuConfig, config)
@@ -147,6 +133,16 @@ export function useMenu(scale: number = 1, root: Ref<Element | null>, baseConfig
     menuShow.value = false
   }
   
+  onMounted(() => {
+    document.addEventListener('mousedown', menuClose)
+    window.addEventListener('scroll', menuClose, true)
+  })
+  
+  onUnmounted(() => {
+    document.removeEventListener('mousedown', menuClose)
+    window.removeEventListener('scroll', menuClose, true)
+  })
+  
   return {
     menuShow,
     menuPosition,
@@ -154,5 +150,79 @@ export function useMenu(scale: number = 1, root: Ref<Element | null>, baseConfig
     menuClose,
     menuSelected,
     menuConfig
+  }
+}
+
+export function useListenerEvent(opt: {
+  root: Ref<Element | null>,
+  query: string,
+  event: string,
+  listener: (...arg: any) => any
+}) {
+  const {
+    root,
+    query,
+    event,
+    listener
+  } = opt
+  let currentEventList: NodeListOf<Element> | [] = []
+  
+  onMounted(() => {
+    currentEventList = unref(root)!.querySelectorAll(query)
+    currentEventList.forEach(ele => ele.addEventListener(event, listener))
+  })
+  
+  onUnmounted(() => {
+    currentEventList.forEach((ele: Element) => ele.removeEventListener(event, listener))
+  })
+}
+
+export function useTemLine() {
+  const isLineCreating = ref<boolean>(false)
+  const template = reactive<LineItem>({
+    id: '',
+    startId: '',
+    endId: '',
+    startAt: [0, 0],
+    endAt: [0, 0],
+    path: []
+  })
+  
+  onMounted(() => {
+    document.addEventListener('mousemove', docMousemove)
+    document.addEventListener('mouseup', docMouseup)
+  })
+  
+  onUnmounted(() => {
+    document.addEventListener('mousemove', docMousemove)
+    document.addEventListener('mouseup', docMouseup)
+  })
+  
+  function docMousemove() {
+    if (!isLineCreating.value) return
+    
+  }
+  
+  function docMouseup() {
+    isLineCreating.value = false
+  }
+  
+  function lineStart(startId: NodeId, startAt: Coordinate) {
+    isLineCreating.value = true
+    template.startId = startId
+    template.startAt = startAt
+  }
+  
+  function lineEnd(endId: NodeId, endAt: Coordinate) {
+    isLineCreating.value = false
+    template.endId = endId
+    template.endAt = endAt
+    return JSON.parse(JSON.stringify(template))
+  }
+  
+  return {
+    isLineCreating,
+    lineStart,
+    lineEnd
   }
 }

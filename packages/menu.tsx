@@ -3,9 +3,15 @@
  * Date: 2020/11/4
  * Time: 15:15
  */
-import {defineComponent, PropType, withModifiers} from 'vue'
+import {defineComponent, PropType, SetupContext, withModifiers} from 'vue'
 import {isFun} from './utils'
 import {CSSProperties} from '@vue/runtime-dom'
+
+
+type MenuEvents = {
+  menuSelected: (item: MenuItem) => void
+}
+
 
 function menuStyle(position: Coordinate): CSSProperties {
   const [left, top] = position
@@ -15,6 +21,7 @@ function menuStyle(position: Coordinate): CSSProperties {
   }
   return result
 }
+
 
 export default defineComponent({
   name: 'FlowMenu',
@@ -32,7 +39,8 @@ export default defineComponent({
       default: () => []
     }
   },
-  setup(props, {emit, slots}) {
+  emits: ['menuSelected'],
+  setup(props, {emit, slots}: SetupContext<MenuEvents>) {
     
     function renderMenuItem(subList: MenuItem[]) {
       return subList.map(item => {

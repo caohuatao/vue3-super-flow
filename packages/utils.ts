@@ -86,11 +86,11 @@ export function toRawType(val: any): string {
   return Object.prototype.toString.call(val).slice(8, -1).toLocaleLowerCase()
 }
 
-export function isFun<T>(val: any): val is T {
+export function isFun<T extends (...args: any) => any>(val: any): val is T {
   return toRawType(val) === 'function'
 }
 
-export function isArray<T>(val: any): val is T {
+export function isArray<T extends any[]>(val: any): val is T {
   return toRawType(val) === 'array'
 }
 
@@ -110,7 +110,7 @@ export function isString(val: any): val is string {
   return toRawType(val) === 'string'
 }
 
-export function isObject(val: any): val is object {
+export function isObject<T extends object>(val: any): val is T {
   return toRawType(val) === 'object'
 }
 

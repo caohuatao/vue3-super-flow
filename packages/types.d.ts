@@ -8,9 +8,9 @@ type LineId = string | number
 type NodeId = string | number
 type Coordinate = [number, number]
 type Color = string
+type LinePath = Coordinate[]
 type MenuSelectedItem = NodeItem | LineItem | null
 type MenuSelectedHandler = GraphHandler | NodeHandler | LineHandler
-
 
 interface NodeItem {
   id: NodeId
@@ -26,6 +26,7 @@ interface LineItem {
   endId: NodeId
   startAt: Coordinate
   endAt: Coordinate
+  path: LinePath,
   meta?: {[key: string]: any}
 }
 
@@ -65,12 +66,3 @@ interface NodeHandler {
 interface LineHandler {
 
 }
-
-
-interface MenuConfig {
-  source: MenuSelectedItem
-  list: MenuItem[][]
-  handler: MenuSelectedHandler
-}
-
-

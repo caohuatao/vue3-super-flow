@@ -5,7 +5,7 @@
  */
 
 import {ref, unref, PropType, defineComponent, withModifiers, provide, Ref} from 'vue'
-import {useMenu, useMoveNode} from './hooks'
+import {useMenu, useDragNode, useTemLine} from './hooks'
 import {addVector, arrayExchange, differ, multiply} from './utils'
 import FlowMenu from './menu'
 import FlowNode from './node'
@@ -58,17 +58,16 @@ export default defineComponent({
     const scale = props.scale > 0 ? props.scale : 1
     const root = ref<Element | null>(null)
     const graphHandler = {}
-    
     const {
       nodeMove,
       nodeOffset,
       nodeMousedown
-    } = useMoveNode(props.origin, scale, props.nodeList)
+    } = useDragNode(props.origin, scale, props.nodeList)
     
     const {
-      menuConfig,
       menuShow,
       menuPosition,
+      menuConfig,
       menuClose,
       menuOpen,
       menuSelected
@@ -78,6 +77,11 @@ export default defineComponent({
       handler: graphHandler
     })
     
+    const {
+      isLineCreating,
+      lineStart,
+      lineEnd
+    } = useTemLine()
     
     function renderNodeList() {
       return props.nodeList.map((node: NodeItem, idx) => {
@@ -92,15 +96,23 @@ export default defineComponent({
         const onNodeContextMenu = (evt: MouseEvent) => {
           menuOpen(evt, {
             list: props.nodeMenuList,
-            handler: nodeHandler,
+            handler: {
+              remove() {
+                props.nodeList.splice(idx, 1)
+              }
+            },
             source: node
           })
+        }
+        const onNodeCreateLine = (startAt: Coordinate) => {
+        
         }
         
         return (
           <FlowNode
             key={ node.id }
             node={ node }
+            onNodeCreateLine={ onNodeCreateLine }
             onNodeMousedown={ onNodeMousedown }
             onNodeContextmenu={ onNodeContextMenu }
             v-slots={ {default: slots.default} }
