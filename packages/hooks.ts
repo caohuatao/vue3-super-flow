@@ -3,9 +3,8 @@
  * Date: 2020/11/4
  * Time: 9:52
  */
-
-import {ref, reactive, Ref, onMounted, onUnmounted, unref} from 'vue'
-import {addVector, arrayExchange, differ, minus, multiply} from './utils'
+import { ref, reactive, Ref, onMounted, onUnmounted, unref } from 'vue'
+import { addVector, arrayExchange, differ, minus, multiply } from './utils'
 
 
 export function useDrag(
@@ -178,8 +177,9 @@ export function useListenerEvent(opt: {
 }
 
 export function useTemLine() {
+  let startNoe
   const isLineCreating = ref<boolean>(false)
-  const template = reactive<LineItem>({
+  const lineTemplate = reactive<LineItem>({
     id: '',
     startId: '',
     endId: '',
@@ -207,21 +207,23 @@ export function useTemLine() {
     isLineCreating.value = false
   }
   
-  function lineStart(startId: NodeId, startAt: Coordinate) {
+  function lineStart(startNode: NodeItem, startAt: Coordinate) {
     isLineCreating.value = true
-    template.startId = startId
-    template.startAt = startAt
+    lineTemplate.startId = startNode.id
+    lineTemplate.startAt = startAt
+    startNoe = startNode
   }
   
-  function lineEnd(endId: NodeId, endAt: Coordinate) {
+  function lineEnd(endId: NodeId, endAt: Coordinate): LineItem {
     isLineCreating.value = false
-    template.endId = endId
-    template.endAt = endAt
-    return JSON.parse(JSON.stringify(template))
+    lineTemplate.endId = endId
+    lineTemplate.endAt = endAt
+    return JSON.parse(JSON.stringify(lineTemplate))
   }
   
   return {
     isLineCreating,
+    lineTemplate,
     lineStart,
     lineEnd
   }

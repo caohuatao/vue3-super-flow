@@ -15,23 +15,6 @@ export function uuid(before = '', after = '') {
   return before + uuid.join('') + after
 }
 
-export function getOffset(evt: MouseEvent, target?: Element) {
-  const {
-    clientX,
-    clientY,
-    currentTarget
-  } = evt
-  
-  const current = target || <Element>currentTarget
-  
-  const {
-    left,
-    top
-  } = current.getBoundingClientRect()
-  
-  return [clientX - left, clientY - top]
-}
-
 export function addVector(vectorA: Coordinate, vectorB: Coordinate): Coordinate {
   return [vectorA[0] + vectorB[0], vectorA[1] + vectorB[1]]
 }
@@ -66,7 +49,7 @@ export function equals(vector: Coordinate, target: Coordinate): boolean {
 }
 
 export function angle(vector: Coordinate): number {
-  return Math.round(180 / Math.PI * Math.atan2(vector[1], vector[0])) + 180
+  return Math.round(180 / Math.PI * Math.atan2(vector[1], vector[0]))
 }
 
 export function parallel(vectorA: Coordinate, vectorB: Coordinate): boolean {

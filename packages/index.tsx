@@ -3,12 +3,12 @@
  * Date: 2020/11/3
  * Time: 17:46
  */
-
-import {ref, unref, PropType, defineComponent, withModifiers, provide, Ref} from 'vue'
-import {useMenu, useDragNode, useTemLine} from './hooks'
-import {addVector, arrayExchange, differ, multiply} from './utils'
+import { ref, unref, PropType, defineComponent, withModifiers, provide, Ref } from 'vue'
+import { useMenu, useDragNode, useTemLine } from './hooks'
+import { addVector, arrayExchange, differ, multiply } from './utils'
 import FlowMenu from './menu'
 import FlowNode from './node'
+import FlowLine from './line'
 
 import './index.less'
 
@@ -80,7 +80,8 @@ export default defineComponent({
     const {
       isLineCreating,
       lineStart,
-      lineEnd
+      lineEnd,
+      lineTemplate
     } = useTemLine()
     
     function renderNodeList() {
@@ -132,6 +133,10 @@ export default defineComponent({
           transformOrigin: `${ props.origin[0] }px ${ props.origin[1] }px`
         } }
         onContextmenu={ withModifiers(menuOpen, ['stop', 'prevent']) }>
+        <FlowLine
+          v-show={ unref(isLineCreating) }
+          line={ lineTemplate }
+        />
         { renderNodeList() }
       </div>
       <FlowMenu

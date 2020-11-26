@@ -3,13 +3,14 @@
  * Date: 2020/11/3
  * Time: 17:36
  */
+
 /// <reference path="../packages/types.d.ts" />
 /// <reference path="../packages/shim-tsx.d.ts" />
 
-import {defineComponent, ref, reactive, computed, Ref, onMounted} from 'vue'
+import { defineComponent, ref, reactive, computed, Ref, onMounted, unref } from 'vue'
 import SuperFlow from '../packages'
-import {useDrag} from '../packages/hooks'
-import {addVector, uuid} from '../packages/utils'
+import { useDrag } from '../packages/hooks'
+import { addVector, uuid } from '../packages/utils'
 import './App.less'
 import node from '../packages/node'
 
@@ -33,6 +34,7 @@ export default defineComponent({
   name: 'App',
   setup() {
     const [isMove, offset, mousedown] = useDrag()
+    const scale = ref<number>(1)
     const nodeList = reactive<NodeItem[]>([])
     const lineList = reactive<LineItem[]>([])
     const mousedownInfo = reactive<MousedownInfo>({
@@ -43,7 +45,7 @@ export default defineComponent({
       [
         {
           label: '全选',
-          selected(graph, coordinate) {}
+          selected(graph, coordinate) { }
         }
       ],
       [
@@ -253,7 +255,7 @@ export default defineComponent({
         nodeMenuList={ nodeMenu }
         nodeList={ nodeList }
         lineList={ lineList }
-        scale={ 1 }
+        scale={ unref(scale) }
         v-slots={ {
           default: renderFlowNode,
           menuItem: renderMenuItem

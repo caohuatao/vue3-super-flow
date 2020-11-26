@@ -16,19 +16,19 @@ import {
   withModifiers,
   SetupContext
 } from 'vue'
-import {useListenerEvent} from './hooks'
-
-export enum Direction {
-  TOP,
-  RIGHT,
-  BOTTOM,
-  LEFT
-}
+import { useListenerEvent } from './hooks'
 
 type NodeEvents = {
   nodeMousedown: (evt: MouseEvent) => void,
   nodeContextmenu: (evt: MouseEvent) => void,
   nodeCreateLine: (startAt: Coordinate) => void
+}
+
+enum Direction {
+  TOP,
+  RIGHT,
+  BOTTOM,
+  LEFT
 }
 
 export default defineComponent({

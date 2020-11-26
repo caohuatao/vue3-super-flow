@@ -12,6 +12,11 @@ type LinePath = Coordinate[]
 type MenuSelectedItem = NodeItem | LineItem | null
 type MenuSelectedHandler = GraphHandler | NodeHandler | LineHandler
 
+interface Rect {
+  topLeft: Coordinate
+  bottomRight: Coordinate
+}
+
 interface NodeItem {
   id: NodeId
   width: number
