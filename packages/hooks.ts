@@ -3,7 +3,7 @@
  * Date: 2020/11/4
  * Time: 9:52
  */
-import { ref, reactive, Ref, onMounted, onUnmounted, unref } from 'vue'
+import { ref, reactive, Ref, onMounted, onUnmounted, unref, ComputedRef } from 'vue'
 import { addVector, arrayExchange, differ, minus, multiply } from './utils'
 
 
@@ -65,7 +65,7 @@ export function useDrag(
 
 export function useDragNode(
   origin: Coordinate,
-  scale: number,
+  scale: ComputedRef<number>,
   nodeList: NodeItem[]
 ) {
   const [nodeMove, nodeOffset, mousedown] = useDrag(nodeMoveCallback)
@@ -75,7 +75,7 @@ export function useDragNode(
   function nodeMoveCallback(offset: Ref<Coordinate>) {
     current!.coordinate = addVector(
       start,
-      multiply(unref(offset), 1 / scale)
+      multiply(unref(offset), 1 / unref(scale))
     )
   }
   
@@ -101,7 +101,7 @@ interface MenuConfig {
 }
 
 export function useMenu(
-  scale: number = 1,
+  scale: ComputedRef<number>,
   root: Ref<Element | null>,
   baseConfig: MenuConfig
 ) {
@@ -125,7 +125,7 @@ export function useMenu(
   
   function menuSelected(item: MenuItem) {
     item.selected(
-      multiply(minus(menuPosition.value, offset), 1 / scale),
+      multiply(minus(menuPosition.value, offset), 1 / unref(scale)),
       menuConfig.handler,
       menuConfig.source
     )

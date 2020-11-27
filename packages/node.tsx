@@ -6,29 +6,30 @@
 import {
   inject,
   reactive,
-  PropType,
-  CSSProperties,
   defineComponent,
   ref,
   unref,
+  computed,
+  watch,
+  toRef,
+  
   onMounted,
   onUnmounted,
   withModifiers,
-  SetupContext
+  
+  SetupContext,
+  PropType,
+  CSSProperties,
+  Ref,
+  ComputedRef
 } from 'vue'
 import { useListenerEvent } from './hooks'
+import { addVector } from './utils'
 
 type NodeEvents = {
   nodeMousedown: (evt: MouseEvent) => void,
   nodeContextmenu: (evt: MouseEvent) => void,
   nodeCreateLine: (startAt: Coordinate) => void
-}
-
-enum Direction {
-  TOP,
-  RIGHT,
-  BOTTOM,
-  LEFT
 }
 
 export default defineComponent({
@@ -40,8 +41,17 @@ export default defineComponent({
     }
   },
   setup(props, {emit, slots, attrs}: SetupContext<NodeEvents>) {
-    const nodeRoot = ref<HTMLDivElement | null>(null)
+    const origin = inject<Ref<Coordinate>>('origin')!
+    const scale = inject<ComputedRef<number>>('scale')!
+    
     const node = props.node
+    const nodeRoot = ref<HTMLDivElement | null>(null)
+    
+    const position = computed<Coordinate>(() => {
+      return addVector(unref(origin), node.coordinate)
+    })
+    
+    
     const contextmenuFun = (evt: MouseEvent) => emit('nodeContextmenu', evt)
     
     function flowNodeDrag(evt: Event) {
@@ -77,8 +87,8 @@ export default defineComponent({
       <div
         ref={ nodeRoot }
         style={ {
-          left: node.coordinate[0] + 'px',
-          top: node.coordinate[1] + 'px',
+          left: position.value[0] + 'px',
+          top: position.value[1] + 'px',
           width: node.width + 'px',
           height: node.height + 'px',
           position: 'absolute'

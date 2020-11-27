@@ -39,13 +39,14 @@ function drawArrow(
   fillColor: Color
 ) {
   const arrowSize: number = 4
-  const len = pathList.length
+  const len: number = pathList.length
   
   if (len < 2) return
+  
   const start = pathList[len - 2]
   const end = pathList[len - 1]
   ctx.translate(...end)
-  let ang = Math.atan((end[0] - start[0]) / (end[1] - start[1]))
+  const ang = Math.atan((end[0] - start[0]) / (end[1] - start[1]))
   ctx.beginPath()
   if (end[1] - start[1] >= 0) {
     ctx.rotate(-ang)
@@ -68,6 +69,26 @@ export default defineComponent({
     line: {
       type: Object as PropType<LineItem>,
       default: () => ({})
+    },
+    path: {
+      type: Array as PropType<Coordinate[]>,
+      default: () => []
+    },
+    start: {
+      type: Object as PropType<NodeItem>,
+      default: null
+    },
+    end: {
+      type: Object as PropType<NodeItem>,
+      default: null
+    },
+    startAt: {
+      type: Array as any as PropType<Coordinate>,
+      default: () => [0, 0]
+    },
+    endAt: {
+      type: Array as any as PropType<Coordinate>,
+      default: () => [0, 0]
     }
   },
   setup(props, {emit}) {
@@ -78,7 +99,7 @@ export default defineComponent({
       const canvas = unref(root)!
       ctx = canvas.getContext('2d')
     })
-  
+    
     watchEffect(() => {
       console.log('watchEffect')
     })

@@ -4,7 +4,7 @@
  * Time: 14:04
  */
 
-import { addVector, angle, differ, dotProduct, minus, multiply, parallel } from './utils'
+import { addVector, angle, differ, dotProduct, isFun, minus, multiply, parallel } from './utils'
 
 export enum Direction {
   Top,
@@ -12,6 +12,13 @@ export enum Direction {
   Bottom,
   Left
 }
+
+export const DirectionMap = new Map<Direction, Coordinate>()
+  .set(Direction.Top, [0, -1])
+  .set(Direction.Right, [1, 0])
+  .set(Direction.Bottom, [0, 1])
+  .set(Direction.Left, [-1, 0])
+
 
 export function getRectDirection(coordinate: Coordinate, rect: Rect): Direction {
   const {topLeft, bottomRight} = rect
@@ -46,7 +53,6 @@ function computedLinePath(
   const horizontal: Coordinate = [endCoordinate[0] - startCoordinate[0], 0]
   // 起点 - 终点 垂直方向向量
   const vertical: Coordinate = [0, endCoordinate[1] - startCoordinate[1]]
-  
   
 }
 

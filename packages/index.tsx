@@ -3,7 +3,7 @@
  * Date: 2020/11/3
  * Time: 17:46
  */
-import { ref, unref, PropType, defineComponent, withModifiers, provide, Ref } from 'vue'
+import { ref, unref, PropType, defineComponent, withModifiers, provide, Ref, computed } from 'vue'
 import { useMenu, useDragNode, useTemLine } from './hooks'
 import { addVector, arrayExchange, differ, multiply } from './utils'
 import FlowMenu from './menu'
@@ -53,9 +53,12 @@ export default defineComponent({
     }
   },
   setup(props, {emit, slots, attrs}) {
-    provide('nodeList', props.nodeList)
+    const scale = computed<number>(() => props.scale > 0 ? props.scale : 1)
     
-    const scale = props.scale > 0 ? props.scale : 1
+    provide('nodeList', props.nodeList)
+    provide('origin', props.origin)
+    provide('scale', scale)
+    
     const root = ref<Element | null>(null)
     const graphHandler = {}
     const {
@@ -129,7 +132,7 @@ export default defineComponent({
         class="super-flow__container"
         style={ {
           position: 'relative',
-          transform: `scale(${ scale })`,
+          transform: `scale(${ scale.value })`,
           transformOrigin: `${ props.origin[0] }px ${ props.origin[1] }px`
         } }
         onContextmenu={ withModifiers(menuOpen, ['stop', 'prevent']) }>

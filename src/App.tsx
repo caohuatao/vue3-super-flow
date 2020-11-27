@@ -7,7 +7,7 @@
 /// <reference path="../packages/types.d.ts" />
 /// <reference path="../packages/shim-tsx.d.ts" />
 
-import { defineComponent, ref, reactive, computed, Ref, onMounted, unref } from 'vue'
+import { defineComponent, ref, reactive, computed, Ref, onMounted, unref, withModifiers } from 'vue'
 import SuperFlow from '../packages'
 import { useDrag } from '../packages/hooks'
 import { addVector, uuid } from '../packages/utils'
@@ -35,12 +35,14 @@ export default defineComponent({
   setup() {
     const [isMove, offset, mousedown] = useDrag()
     const scale = ref<number>(1)
+    const origin = ref<Coordinate>([0, 0])
     const nodeList = reactive<NodeItem[]>([])
     const lineList = reactive<LineItem[]>([])
     const mousedownInfo = reactive<MousedownInfo>({
       position: [0, 0],
       current: null
     })
+    
     const graphMenu: MenuItem[][] = [
       [
         {
@@ -245,17 +247,43 @@ export default defineComponent({
       return (<span>{ item.label }</span>)
     }
     
+    function printData() {
+      console.log(scale)
+      console.log(origin)
+      console.log(nodeList)
+      console.log(lineList)
+    }
+    
     return () => (<>
       <ul class="node-item__container clearfix">
         { renderTemItemList() }
         { renderMoveTemItem() }
       </ul>
+      <div style={ {padding: '15px'} }>
+        <button onClick={printData}>打印数据</button>
+        &nbsp;&nbsp;
+        <select v-model={ scale.value }>
+          {
+            [0.5, 0.8, 1, 1.5, 1.8, 2].map(n => (<option value={ n }>{ n }</option>))
+          }
+        </select>
+        <input
+          type="number"
+          v-model_number={unref(origin)[0]}
+        />
+        <input
+          type="number"
+          v-model_number={unref(origin)[1]}
+        />
+      </div>
+     
       <SuperFlow
         graphMenuList={ graphMenu }
         nodeMenuList={ nodeMenu }
         nodeList={ nodeList }
         lineList={ lineList }
         scale={ unref(scale) }
+        origin={ unref(origin) }
         v-slots={ {
           default: renderFlowNode,
           menuItem: renderMenuItem
