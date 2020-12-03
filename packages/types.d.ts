@@ -22,7 +22,7 @@ interface NodeItem {
   width: number
   height: number
   coordinate: Coordinate
-  meta?: {[key: string]: any}
+  meta?: Record<string, any>
 }
 
 interface LineItem {
@@ -32,7 +32,7 @@ interface LineItem {
   startAt: Coordinate
   endAt: Coordinate
   path: LinePath,
-  meta?: {[key: string]: any}
+  meta?: Record<string, any>
 }
 
 interface LineStyle {

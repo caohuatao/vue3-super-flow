@@ -3,7 +3,7 @@
  * Date: 2020/11/4
  * Time: 9:52
  */
-import { ref, reactive, Ref, onMounted, onUnmounted, unref, ComputedRef } from 'vue'
+import { ref, reactive, unref, onMounted, onUnmounted, ComputedRef, Ref } from 'vue'
 import { addVector, arrayExchange, differ, minus, multiply } from './utils'
 
 
@@ -25,7 +25,6 @@ export function useDrag(
     document.removeEventListener('mousemove', mousemove)
     document.removeEventListener('mouseup', mouseup)
   })
-  
   
   function mousedown(evt: MouseEvent) {
     isDown = true
@@ -61,7 +60,6 @@ export function useDrag(
     mousedown
   ]
 }
-
 
 export function useDragNode(
   origin: Coordinate,
@@ -176,8 +174,9 @@ export function useListenerEvent(opt: {
   })
 }
 
-export function useTemLine() {
-  let startNoe
+export function useTemLine(scale: ComputedRef<number>) {
+  let startNode
+  let startPosition
   const isLineCreating = ref<boolean>(false)
   const lineTemplate = reactive<LineItem>({
     id: '',
@@ -198,7 +197,7 @@ export function useTemLine() {
     document.addEventListener('mouseup', docMouseup)
   })
   
-  function docMousemove() {
+  function docMousemove(evt: MouseEvent) {
     if (!isLineCreating.value) return
     
   }
@@ -207,11 +206,12 @@ export function useTemLine() {
     isLineCreating.value = false
   }
   
-  function lineStart(startNode: NodeItem, startAt: Coordinate) {
+  function lineStart(start: NodeItem, startAt: Coordinate, startCoordinate: Coordinate) {
     isLineCreating.value = true
-    lineTemplate.startId = startNode.id
+    lineTemplate.startId = start.id
     lineTemplate.startAt = startAt
-    startNoe = startNode
+    startNode = start
+    startPosition = startCoordinate
   }
   
   function lineEnd(endId: NodeId, endAt: Coordinate): LineItem {

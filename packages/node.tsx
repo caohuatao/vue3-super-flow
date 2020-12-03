@@ -11,7 +11,6 @@ import {
   unref,
   computed,
   watch,
-  toRef,
   
   onMounted,
   onUnmounted,
@@ -24,12 +23,12 @@ import {
   ComputedRef
 } from 'vue'
 import { useListenerEvent } from './hooks'
-import { addVector } from './utils'
+import { addVector, isObject } from './utils'
 
 type NodeEvents = {
   nodeMousedown: (evt: MouseEvent) => void,
   nodeContextmenu: (evt: MouseEvent) => void,
-  nodeCreateLine: (startAt: Coordinate) => void
+  nodeCreateLine: (evt: MouseEvent, startAt: Coordinate) => void
 }
 
 export default defineComponent({
@@ -46,19 +45,11 @@ export default defineComponent({
     
     const node = props.node
     const nodeRoot = ref<HTMLDivElement | null>(null)
-    
-    const position = computed<Coordinate>(() => {
-      return addVector(unref(origin), node.coordinate)
-    })
-    
+    const position = computed<Coordinate>(() => addVector(unref(origin), node.coordinate))
     
     const contextmenuFun = (evt: MouseEvent) => emit('nodeContextmenu', evt)
     
-    function flowNodeDrag(evt: Event) {
-      emit('nodeMousedown', evt as MouseEvent)
-    }
-    
-    function flowNodeInitiate(evt: Event) {
+    function flowNodeInitiate(evt: MouseEvent) {
       const ele = evt.currentTarget as Element
       const val = ele.getAttribute('flow-node-initiate') || '0,0'
       const [left = 0, top = 0] = val.split(',').map(item => {
@@ -66,14 +57,14 @@ export default defineComponent({
         return isNaN(n) ? 0 : n
       })
       document.body.style.userSelect = 'none'
-      emit('nodeCreateLine', [left, top])
+      emit('nodeCreateLine', evt, [left, top])
     }
     
     useListenerEvent({
       root: nodeRoot,
       query: '[flow-node-drag]',
       event: 'mousedown',
-      listener: withModifiers(flowNodeDrag, ['stop', 'prevent'])
+      listener: (evt: Event) => emit('nodeMousedown', evt as MouseEvent)
     })
     
     useListenerEvent({

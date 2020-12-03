@@ -3,9 +3,9 @@
  * Date: 2020/11/3
  * Time: 17:46
  */
-import { ref, unref, PropType, defineComponent, withModifiers, provide, Ref, computed } from 'vue'
+import { ref, unref, defineComponent, computed, provide, withModifiers, Ref, PropType } from 'vue'
 import { useMenu, useDragNode, useTemLine } from './hooks'
-import { addVector, arrayExchange, differ, multiply } from './utils'
+import { addVector, arrayExchange, differ, minus, multiply } from './utils'
 import FlowMenu from './menu'
 import FlowNode from './node'
 import FlowLine from './line'
@@ -54,10 +54,16 @@ export default defineComponent({
   },
   setup(props, {emit, slots, attrs}) {
     const scale = computed<number>(() => props.scale > 0 ? props.scale : 1)
+    const nodeMap = computed<Map<NodeId, NodeItem>>(() => {
+      const map: Map<NodeId, NodeItem> = new Map()
+      props.nodeList.forEach(node => map.set(node.id, node))
+      return map
+    })
     
     provide('nodeList', props.nodeList)
     provide('origin', props.origin)
     provide('scale', scale)
+    provide('nodeMap', nodeMap)
     
     const root = ref<Element | null>(null)
     const graphHandler = {}
@@ -85,7 +91,13 @@ export default defineComponent({
       lineStart,
       lineEnd,
       lineTemplate
-    } = useTemLine()
+    } = useTemLine(scale)
+    
+    function getCoordinate(evt: MouseEvent): Coordinate {
+      const {left, top} = unref(root)!.getBoundingClientRect()
+      const {clientX, clientY} = evt
+      return addVector(minus([clientX, clientY], [left, top]), props.origin)
+    }
     
     function renderNodeList() {
       return props.nodeList.map((node: NodeItem, idx) => {
@@ -108,8 +120,8 @@ export default defineComponent({
             source: node
           })
         }
-        const onNodeCreateLine = (startAt: Coordinate) => {
-        
+        const onNodeCreateLine = (evt: MouseEvent, startAt: Coordinate) => {
+          lineStart(node, startAt, getCoordinate(evt))
         }
         
         return (
@@ -139,6 +151,7 @@ export default defineComponent({
         <FlowLine
           v-show={ unref(isLineCreating) }
           line={ lineTemplate }
+          start={nodeMap.value.get(lineTemplate.startId)}
         />
         { renderNodeList() }
       </div>

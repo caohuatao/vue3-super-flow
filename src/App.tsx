@@ -7,7 +7,7 @@
 /// <reference path="../packages/types.d.ts" />
 /// <reference path="../packages/shim-tsx.d.ts" />
 
-import { defineComponent, ref, reactive, computed, Ref, onMounted, unref, withModifiers } from 'vue'
+import { defineComponent, ref, reactive, computed, unref, Ref, withModifiers, onMounted } from 'vue'
 import SuperFlow from '../packages'
 import { useDrag } from '../packages/hooks'
 import { addVector, uuid } from '../packages/utils'
@@ -213,34 +213,32 @@ export default defineComponent({
     }
     
     function renderFlowNode(node: NodeItem) {
-      return (
-        <>
-          <header
-            class="ellipsis"
-            flow-node-drag>
-            { node.meta!.label }
-          </header>
-          <section>
-          
-          </section>
-          <span
-            class="side side-top"
-            flow-node-initiate={ `${ node.width / 2 },0` }
-          />
-          <span
-            class="side side-right"
-            flow-node-initiate={ `${ node.width },${ node.height / 2 }` }
-          />
-          <span
-            class="side side-bottom"
-            flow-node-initiate={ `${ node.width / 2 },${ node.height }` }
-          />
-          <span
-            class="side side-left"
-            flow-node-initiate={ `${ node.width / 2 },${ node.height }` }
-          />
-        </>
-      )
+      return (<>
+        <header
+          class="ellipsis"
+          flow-node-drag>
+          { node.meta!.label }
+        </header>
+        <section>
+        
+        </section>
+        <span
+          class="side side-top"
+          flow-node-initiate={ `${ node.width / 2 },0` }
+        />
+        <span
+          class="side side-right"
+          flow-node-initiate={ `${ node.width },${ node.height / 2 }` }
+        />
+        <span
+          class="side side-bottom"
+          flow-node-initiate={ `${ node.width / 2 },${ node.height }` }
+        />
+        <span
+          class="side side-left"
+          flow-node-initiate={ `${ node.width / 2 },${ node.height }` }
+        />
+      </>)
     }
     
     function renderMenuItem(item: MenuItem) {
@@ -260,23 +258,22 @@ export default defineComponent({
         { renderMoveTemItem() }
       </ul>
       <div style={ {padding: '15px'} }>
-        <button onClick={printData}>打印数据</button>
+        <button onClick={ printData }>打印数据</button>
         &nbsp;&nbsp;
         <select v-model={ scale.value }>
           {
-            [0.5, 0.8, 1, 1.5, 1.8, 2].map(n => (<option value={ n }>{ n }</option>))
+            [0.5, 0.8, 1, 1.5, 1.8, 2].map(n => (<option key={ n } value={ n }>{ n }</option>))
           }
         </select>
         <input
           type="number"
-          v-model_number={unref(origin)[0]}
+          v-model_number={ unref(origin)[0] }
         />
         <input
           type="number"
-          v-model_number={unref(origin)[1]}
+          v-model_number={ unref(origin)[1] }
         />
       </div>
-     
       <SuperFlow
         graphMenuList={ graphMenu }
         nodeMenuList={ nodeMenu }

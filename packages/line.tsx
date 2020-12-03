@@ -3,7 +3,7 @@
  * Date: 2020/11/4
  * Time: 15:32
  */
-import { defineComponent, onMounted, PropType, ref, unref, watchEffect } from 'vue'
+import { defineComponent, inject, onMounted, PropType, ComputedRef, ref, unref, watch, watchEffect } from 'vue'
 import { Direction } from './direction'
 
 function drawLine(
@@ -68,31 +68,12 @@ export default defineComponent({
   props: {
     line: {
       type: Object as PropType<LineItem>,
-      default: () => ({})
-    },
-    path: {
-      type: Array as PropType<Coordinate[]>,
-      default: () => []
-    },
-    start: {
-      type: Object as PropType<NodeItem>,
-      default: null
-    },
-    end: {
-      type: Object as PropType<NodeItem>,
-      default: null
-    },
-    startAt: {
-      type: Array as any as PropType<Coordinate>,
-      default: () => [0, 0]
-    },
-    endAt: {
-      type: Array as any as PropType<Coordinate>,
-      default: () => [0, 0]
+      required: true
     }
   },
   setup(props, {emit}) {
     const root = ref<HTMLCanvasElement | null>(null)
+    const nodeMap = inject<ComputedRef<Map<NodeId, NodeItem>>>('nodeMap')
     let ctx: CanvasRenderingContext2D | null = null
     
     onMounted(() => {
@@ -102,6 +83,10 @@ export default defineComponent({
     
     watchEffect(() => {
       console.log('watchEffect')
+    })
+    
+    watch(props.line.path, () => {
+    
     })
     
     return () => (
