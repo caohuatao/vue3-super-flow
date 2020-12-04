@@ -22,7 +22,6 @@ function menuStyle(position: Coordinate): CSSProperties {
   return result
 }
 
-
 export default defineComponent({
   name: 'FlowMenu',
   props: {

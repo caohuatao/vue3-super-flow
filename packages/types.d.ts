@@ -41,7 +41,7 @@ interface LineStyle {
   lineHover?: Color
   descColor?: Color
   descHover?: Color
-  font?: Color
+  font?: string
   lineDash?: [number, number]
   background?: Color
 }
@@ -71,3 +71,5 @@ interface NodeHandler {
 interface LineHandler {
 
 }
+
+

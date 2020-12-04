@@ -3,14 +3,164 @@
  * Date: 2020/11/3
  * Time: 17:46
  */
-import { ref, unref, defineComponent, computed, provide, withModifiers, Ref, PropType } from 'vue'
-import { useMenu, useDragNode, useTemLine } from './hooks'
+import {
+  ref,
+  unref,
+  defineComponent,
+  computed,
+  provide,
+  withModifiers,
+  Ref,
+  PropType,
+  ComputedRef,
+  onMounted,
+  onUnmounted
+} from 'vue'
+import { useDrag } from './hooks'
 import { addVector, arrayExchange, differ, minus, multiply } from './utils'
+import { Graph, GraphLine, GraphNode } from './Graph'
+
 import FlowMenu from './menu'
 import FlowNode from './node'
 import FlowLine from './line'
 
 import './index.less'
+
+
+interface MenuConfig {
+  list: MenuItem[][]
+  handler: MenuSelectedHandler
+  source: MenuSelectedItem
+}
+
+function useMenu(
+  scale: ComputedRef<number>,
+  root: Ref<Element | null>,
+  baseConfig: MenuConfig
+) {
+  const menuShow = ref<boolean>(false)
+  const menuPosition = ref<Coordinate>([0, 0])
+  const menuConfig: MenuConfig = {...baseConfig}
+  let offset: Coordinate = [0, 0]
+  
+  function menuOpen(evt: MouseEvent, config: MenuConfig = baseConfig) {
+    Object.assign(menuConfig, config)
+    
+    const {top, left} = unref(root)!.getBoundingClientRect()
+    menuPosition.value = [evt.clientX, evt.clientY]
+    menuShow.value = true
+    offset = [left, top]
+  }
+  
+  function menuClose() {
+    menuShow.value = false
+  }
+  
+  function menuSelected(item: MenuItem) {
+    item.selected(
+      multiply(minus(menuPosition.value, offset), 1 / unref(scale)),
+      menuConfig.handler,
+      menuConfig.source
+    )
+    menuShow.value = false
+  }
+  
+  onMounted(() => {
+    document.addEventListener('mousedown', menuClose)
+    window.addEventListener('scroll', menuClose, true)
+  })
+  
+  onUnmounted(() => {
+    document.removeEventListener('mousedown', menuClose)
+    window.removeEventListener('scroll', menuClose, true)
+  })
+  
+  return {
+    menuShow,
+    menuPosition,
+    menuOpen,
+    menuClose,
+    menuSelected,
+    menuConfig
+  }
+}
+
+
+function useTemLine(scale: ComputedRef<number>, temLine: GraphLine) {
+  let startPosition
+  const isLineCreating = ref<boolean>(false)
+  
+  onMounted(() => {
+    document.addEventListener('mousemove', docMousemove)
+    document.addEventListener('mouseup', docMouseup)
+  })
+  
+  onUnmounted(() => {
+    document.addEventListener('mousemove', docMousemove)
+    document.addEventListener('mouseup', docMouseup)
+  })
+  
+  function docMousemove(evt: MouseEvent) {
+    if (!isLineCreating.value) return
+    
+  }
+  
+  function docMouseup() {
+    isLineCreating.value = false
+  }
+  
+  function lineStart(start: NodeItem, startAt: Coordinate, startCoordinate: Coordinate) {
+    isLineCreating.value = true
+    temLine.updateSetting('startId', start.id)
+    temLine.updateSetting('startAt', startAt)
+    startPosition = startCoordinate
+  }
+  
+  function lineEnd(endId: NodeId, endAt: Coordinate) {
+    isLineCreating.value = false
+    temLine.updateSetting('endId', endId)
+    temLine.updateSetting('endAt', endAt)
+    
+  }
+  
+  return {
+    isLineCreating,
+    lineStart,
+    lineEnd
+  }
+}
+
+
+function useDragNode(
+  origin: Coordinate,
+  scale: ComputedRef<number>,
+  nodeList: NodeItem[]
+) {
+  const [nodeMove, nodeOffset, mousedown] = useDrag(nodeMoveCallback)
+  let start: Coordinate = [0, 0]
+  let current: NodeItem
+  
+  function nodeMoveCallback(offset: Ref<Coordinate>) {
+    current!.coordinate = addVector(
+      start,
+      multiply(unref(offset), 1 / unref(scale))
+    )
+  }
+  
+  function nodeMousedown(evt: MouseEvent, node: NodeItem, idx: number) {
+    current = node
+    start = differ(origin, node.coordinate)
+    mousedown(evt)
+    arrayExchange(nodeList, idx)
+  }
+  
+  return {
+    nodeMove,
+    nodeOffset,
+    nodeMousedown
+  }
+}
+
 
 export default defineComponent({
   name: 'SuperFlow',
@@ -53,17 +203,18 @@ export default defineComponent({
     }
   },
   setup(props, {emit, slots, attrs}) {
+    
     const scale = computed<number>(() => props.scale > 0 ? props.scale : 1)
-    const nodeMap = computed<Map<NodeId, NodeItem>>(() => {
-      const map: Map<NodeId, NodeItem> = new Map()
-      props.nodeList.forEach(node => map.set(node.id, node))
-      return map
+    const graph = new Graph({
+      nodeList: props.nodeList,
+      lineList: props.lineList,
+      origin: ref(props.origin),
+      scale
     })
     
     provide('nodeList', props.nodeList)
     provide('origin', props.origin)
     provide('scale', scale)
-    provide('nodeMap', nodeMap)
     
     const root = ref<Element | null>(null)
     const graphHandler = {}
@@ -89,26 +240,22 @@ export default defineComponent({
     const {
       isLineCreating,
       lineStart,
-      lineEnd,
-      lineTemplate
-    } = useTemLine(scale)
+      lineEnd
+    } = useTemLine(scale, graph.temLine)
     
-    function getCoordinate(evt: MouseEvent): Coordinate {
-      const {left, top} = unref(root)!.getBoundingClientRect()
-      const {clientX, clientY} = evt
-      return addVector(minus([clientX, clientY], [left, top]), props.origin)
-    }
     
     function renderNodeList() {
-      return props.nodeList.map((node: NodeItem, idx) => {
+      return Array.from(unref(graph.nodeMap)).map((mapItem, idx) => {
+        const [nodeId, flowNode] = mapItem
         const nodeHandler: NodeHandler = {
           remove() {
             props.nodeList.splice(idx, 1)
           }
         }
         const onNodeMousedown = (evt: MouseEvent) => {
-          nodeMousedown(evt, node, idx)
+          nodeMousedown(evt, flowNode.setting, idx)
         }
+        
         const onNodeContextMenu = (evt: MouseEvent) => {
           menuOpen(evt, {
             list: props.nodeMenuList,
@@ -117,17 +264,18 @@ export default defineComponent({
                 props.nodeList.splice(idx, 1)
               }
             },
-            source: node
+            source: flowNode.setting
           })
         }
+        
         const onNodeCreateLine = (evt: MouseEvent, startAt: Coordinate) => {
-          lineStart(node, startAt, getCoordinate(evt))
+          lineStart(flowNode.setting, startAt, unref(flowNode.position))
         }
         
         return (
           <FlowNode
-            key={ node.id }
-            node={ node }
+            key={ nodeId }
+            node={ flowNode }
             onNodeCreateLine={ onNodeCreateLine }
             onNodeMousedown={ onNodeMousedown }
             onNodeContextmenu={ onNodeContextMenu }
@@ -148,11 +296,9 @@ export default defineComponent({
           transformOrigin: `${ props.origin[0] }px ${ props.origin[1] }px`
         } }
         onContextmenu={ withModifiers(menuOpen, ['stop', 'prevent']) }>
-        <FlowLine
-          v-show={ unref(isLineCreating) }
-          line={ lineTemplate }
-          start={nodeMap.value.get(lineTemplate.startId)}
-        />
+        {
+          unref(isLineCreating) ? <FlowLine graphLine={ graph.temLine }/> : []
+        }
         { renderNodeList() }
       </div>
       <FlowMenu

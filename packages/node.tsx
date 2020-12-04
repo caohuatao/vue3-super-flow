@@ -24,6 +24,7 @@ import {
 } from 'vue'
 import { useListenerEvent } from './hooks'
 import { addVector, isObject } from './utils'
+import { GraphNode } from './Graph'
 
 type NodeEvents = {
   nodeMousedown: (evt: MouseEvent) => void,
@@ -35,7 +36,7 @@ export default defineComponent({
   name: 'FlowNode',
   props: {
     node: {
-      type: Object as PropType<NodeItem>,
+      type: Object as PropType<GraphNode>,
       required: true
     }
   },
@@ -43,9 +44,8 @@ export default defineComponent({
     const origin = inject<Ref<Coordinate>>('origin')!
     const scale = inject<ComputedRef<number>>('scale')!
     
-    const node = props.node
+    const {setting, position} = props.node
     const nodeRoot = ref<HTMLDivElement | null>(null)
-    const position = computed<Coordinate>(() => addVector(unref(origin), node.coordinate))
     
     const contextmenuFun = (evt: MouseEvent) => emit('nodeContextmenu', evt)
     
@@ -80,14 +80,14 @@ export default defineComponent({
         style={ {
           left: position.value[0] + 'px',
           top: position.value[1] + 'px',
-          width: node.width + 'px',
-          height: node.height + 'px',
+          width: setting.width + 'px',
+          height: setting.height + 'px',
           position: 'absolute'
         } }
         onContextmenu={ withModifiers(contextmenuFun, ['stop', 'prevent']) }
         tabindex={ -1 }
         class="super-flow__node">
-        { slots.default?.(node) }
+        { slots.default?.(setting) }
       </div>
     )
   }

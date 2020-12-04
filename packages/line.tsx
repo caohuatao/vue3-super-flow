@@ -3,8 +3,21 @@
  * Date: 2020/11/4
  * Time: 15:32
  */
-import { defineComponent, inject, onMounted, PropType, ComputedRef, ref, unref, watch, watchEffect } from 'vue'
+import {
+  defineComponent,
+  inject,
+  onMounted,
+  PropType,
+  ComputedRef,
+  ref,
+  unref,
+  watch,
+  watchEffect,
+  computed
+} from 'vue'
 import { Direction } from './direction'
+import { GraphLine } from './Graph'
+
 
 function drawLine(
   ctx: CanvasRenderingContext2D,
@@ -29,9 +42,11 @@ function drawLine(
   ctx.save()
 }
 
+
 function drawDesc() {
 
 }
+
 
 function drawArrow(
   ctx: CanvasRenderingContext2D,
@@ -63,17 +78,38 @@ function drawArrow(
   ctx.restore()
 }
 
+
+const lineBaseStyle: Required<LineStyle> = {
+  type: 'solid',
+  lineColor: '#333333',
+  lineHover: '#FF0000',
+  descColor: '#333333',
+  descHover: '#FF0000',
+  font: '14px Arial',
+  lineDash: [4, 4],
+  background: 'rgba(255,255,255, .6)'
+}
+
+
 export default defineComponent({
   name: 'FlowLine',
   props: {
-    line: {
-      type: Object as PropType<LineItem>,
+    graphLine: {
+      type: Object as PropType<GraphLine>,
       required: true
+    },
+    lineStyle: {
+      type: Object as PropType<LineStyle>,
+      default: () => ({})
     }
   },
   setup(props, {emit}) {
+    const line = props.graphLine
+    const lineStyle = computed(() => {
+      return Object.assign({}, lineBaseStyle, props.lineStyle)
+    })
     const root = ref<HTMLCanvasElement | null>(null)
-    const nodeMap = inject<ComputedRef<Map<NodeId, NodeItem>>>('nodeMap')
+    
     let ctx: CanvasRenderingContext2D | null = null
     
     onMounted(() => {
@@ -81,18 +117,11 @@ export default defineComponent({
       ctx = canvas.getContext('2d')
     })
     
-    watchEffect(() => {
-      console.log('watchEffect')
+    
+    watch([line.setting, lineStyle, line.startNode, line.endNode], () => {
+      drawLine(ctx!, line.setting.path, unref(lineStyle))
     })
     
-    watch(props.line.path, () => {
-    
-    })
-    
-    return () => (
-      <canvas
-        ref={ root }
-      />
-    )
+    return () => (<canvas ref={ root }/>)
   }
 })
