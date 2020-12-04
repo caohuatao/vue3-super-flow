@@ -162,6 +162,18 @@ function useDragNode(
 }
 
 
+const lineBaseStyle: Required<LineStyle> = {
+  type: 'solid',
+  lineColor: '#333333',
+  lineHover: '#FF0000',
+  descColor: '#333333',
+  descHover: '#FF0000',
+  font: '14px Arial',
+  lineDash: [4, 4],
+  background: 'rgba(255,255,255, .6)'
+}
+
+
 export default defineComponent({
   name: 'SuperFlow',
   props: {
@@ -184,6 +196,10 @@ export default defineComponent({
     lineDesc: {
       type: Function as PropType<(line: LineItem) => string>,
       default: () => ''
+    },
+    lineBaseStyle: {
+      type: Object as PropType<LineStyle>,
+      default: () => ({})
     },
     lineStyle: {
       type: Function as PropType<(line: LineItem) => LineStyle>,
@@ -215,6 +231,10 @@ export default defineComponent({
     provide('nodeList', props.nodeList)
     provide('origin', props.origin)
     provide('scale', scale)
+    provide('lineBaseStyle', computed<Required<LineStyle>>(() => {
+      return Object.assign({}, lineBaseStyle, props.lineBaseStyle)
+    }))
+    
     
     const root = ref<Element | null>(null)
     const graphHandler = {}
@@ -297,7 +317,11 @@ export default defineComponent({
         } }
         onContextmenu={ withModifiers(menuOpen, ['stop', 'prevent']) }>
         {
-          unref(isLineCreating) ? <FlowLine graphLine={ graph.temLine }/> : []
+          unref(isLineCreating) ?
+            <FlowLine
+              graphLine={ graph.temLine }
+              lineStyle={ props.lineStyle }
+            /> : []
         }
         { renderNodeList() }
       </div>

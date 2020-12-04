@@ -79,18 +79,6 @@ function drawArrow(
 }
 
 
-const lineBaseStyle: Required<LineStyle> = {
-  type: 'solid',
-  lineColor: '#333333',
-  lineHover: '#FF0000',
-  descColor: '#333333',
-  descHover: '#FF0000',
-  font: '14px Arial',
-  lineDash: [4, 4],
-  background: 'rgba(255,255,255, .6)'
-}
-
-
 export default defineComponent({
   name: 'FlowLine',
   props: {
@@ -99,16 +87,17 @@ export default defineComponent({
       required: true
     },
     lineStyle: {
-      type: Object as PropType<LineStyle>,
-      default: () => ({})
+      type: Function as PropType<(line: LineItem) => LineStyle>,
+      default: null
     }
   },
   setup(props, {emit}) {
-    const line = props.graphLine
-    const lineStyle = computed(() => {
-      return Object.assign({}, lineBaseStyle, props.lineStyle)
-    })
     const root = ref<HTMLCanvasElement | null>(null)
+    const line = props.graphLine
+    const lineBaseStyle = inject<Required<LineStyle>>('lineBaseStyle')
+    const lineStyle = computed<Required<LineStyle>>(() => {
+      return Object.assign({}, lineBaseStyle, props.lineStyle?.(line.setting) || {})
+    })
     
     let ctx: CanvasRenderingContext2D | null = null
     
