@@ -33,11 +33,7 @@ interface MenuConfig {
   source: MenuSelectedItem
 }
 
-function useMenu(
-  scale: ComputedRef<number>,
-  root: Ref<Element | null>,
-  baseConfig: MenuConfig
-) {
+function useMenu(scale: ComputedRef<number>, root: Ref<Element | null>, baseConfig: MenuConfig) {
   const menuShow = ref<boolean>(false)
   const menuPosition = ref<Coordinate>([0, 0])
   const menuConfig: MenuConfig = {...baseConfig}
@@ -131,11 +127,7 @@ function useTemLine(scale: ComputedRef<number>, temLine: GraphLine) {
 }
 
 
-function useDragNode(
-  origin: Coordinate,
-  scale: ComputedRef<number>,
-  nodeList: NodeItem[]
-) {
+function useDragNode(origin: Coordinate, scale: ComputedRef<number>, nodeList: NodeItem[]) {
   const [nodeMove, nodeOffset, mousedown] = useDrag(nodeMoveCallback)
   let start: Coordinate = [0, 0]
   let current: NodeItem
@@ -172,7 +164,6 @@ const lineBaseStyle: Required<LineStyle> = {
   lineDash: [4, 4],
   background: 'rgba(255,255,255, .6)'
 }
-
 
 export default defineComponent({
   name: 'SuperFlow',

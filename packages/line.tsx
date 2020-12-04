@@ -19,11 +19,7 @@ import { Direction } from './direction'
 import { GraphLine } from './Graph'
 
 
-function drawLine(
-  ctx: CanvasRenderingContext2D,
-  pathList: Coordinate[],
-  lineStyle: Required<LineStyle>
-) {
+function drawLine(ctx: CanvasRenderingContext2D, pathList: Coordinate[], lineStyle: Required<LineStyle>) {
   ctx.lineJoin = 'round'
   ctx.beginPath()
   if (lineStyle.type === 'dotted') {
@@ -48,11 +44,7 @@ function drawDesc() {
 }
 
 
-function drawArrow(
-  ctx: CanvasRenderingContext2D,
-  pathList: Coordinate[],
-  fillColor: Color
-) {
+function drawArrow(ctx: CanvasRenderingContext2D, pathList: Coordinate[], fillColor: Color) {
   const arrowSize: number = 4
   const len: number = pathList.length
   

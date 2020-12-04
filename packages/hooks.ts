@@ -60,19 +60,15 @@ export function useDrag(
 }
 
 
-
-export function useListenerEvent(opt: {
+interface UseListenerEventParams {
   root: Ref<Element | null>,
   query: string,
   event: string,
   listener: (...arg: any) => any
-}) {
-  const {
-    root,
-    query,
-    event,
-    listener
-  } = opt
+}
+
+export function useListenerEvent(opt: UseListenerEventParams) {
+  const {root, query, event, listener} = opt
   let currentEventList: NodeListOf<Element> | [] = []
   
   onMounted(() => {
